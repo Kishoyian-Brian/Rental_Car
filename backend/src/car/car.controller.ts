@@ -31,8 +31,21 @@ export class CarController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.AGENT)
-  create(@Body() createCarDto: CreateCarDto) {
-    return this.carService.create(createCarDto);
+  @UseInterceptors(FilesInterceptor('images', 5))
+  create(
+    @Body() createCarDto: CreateCarDto,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({ fileType: '.(jpg|jpeg|png|webp)' }),
+        ],
+        fileIsRequired: false, // Images are optional
+      }),
+    )
+    files?: Express.Multer.File[],
+  ) {
+    return this.carService.createWithImages(createCarDto, files);
   }
 
   @Get()

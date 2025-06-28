@@ -48,6 +48,56 @@ export class CarService {
     }
   }
 
+  async createWithImages(createCarDto: CreateCarDto, files?: Express.Multer.File[]) {
+    try {
+      const existingCar = await this.prisma.car.findUnique({
+        where: { licensePlate: createCarDto.licensePlate },
+      });
+
+      if (existingCar) {
+        return this.apiResponse.badRequest('Car with this license plate already exists');
+      }
+
+      // Upload images to Cloudinary if provided
+      let imageUrls: string[] = [];
+      if (files && files.length > 0) {
+        const uploadPromises = files.map(file => 
+          this.cloudinaryService.uploadImageBuffer(file.buffer, file.originalname)
+        );
+        const uploadResults = await Promise.all(uploadPromises);
+        imageUrls = uploadResults;
+      }
+
+      // Combine existing imageUrls with uploaded ones
+      const allImageUrls = [...(createCarDto.imageUrls || []), ...imageUrls];
+
+      const car = await this.prisma.car.create({
+        data: {
+          ...createCarDto,
+          imageUrls: allImageUrls,
+        },
+        include: {
+          location: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+              state: true,
+            },
+          },
+        },
+      });
+
+      return this.apiResponse.ok(car, 'Car created successfully with images', '', car);
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to create car with images',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
   async findAll(filters?: CarSearchFilters) {
     try {
       const where: any = {};

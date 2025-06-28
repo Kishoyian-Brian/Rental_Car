@@ -1,0 +1,345 @@
+### ========================================
+### PAYMENT SYSTEM TESTS
+### ========================================
+### Use this file with VS Code REST Client extension
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### AUTHENTICATION (Get User Token)
+### ========================================
+
+### Login as Customer
+# @name loginCustomer
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "password123"
+}
+
+###
+
+### Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "brianmwasbayo@gmail.com",
+  "password": "brian123"
+}
+
+###
+
+### ========================================
+### PAYMENT CREATION TESTS
+### ========================================
+
+### 1. Create Credit Card Payment
+# @name createCreditCardPayment
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 150.00,
+  "method": "CREDIT_CARD",
+  "status": "PENDING",
+  "transactionId": "TXN_CC_001",
+  "bookingId": "booking-id-here"
+}
+
+###
+
+### 2. Create Debit Card Payment
+# @name createDebitCardPayment
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 85.50,
+  "method": "DEBIT_CARD",
+  "status": "PENDING",
+  "transactionId": "TXN_DC_002",
+  "bookingId": "booking-id-here"
+}
+
+###
+
+### 3. Create Cash Payment
+# @name createCashPayment
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 200.00,
+  "method": "CASH",
+  "status": "COMPLETED",
+  "transactionId": "TXN_CASH_003",
+  "bookingId": "booking-id-here"
+}
+
+###
+
+### 4. Create Mobile Money Payment
+# @name createMobileMoneyPayment
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 120.75,
+  "method": "MOBILE_MONEY",
+  "status": "PENDING",
+  "transactionId": "TXN_MM_004",
+  "bookingId": "booking-id-here"
+}
+
+###
+
+### ========================================
+### PAYMENT RETRIEVAL TESTS
+### ========================================
+
+### 5. Get All Payments (Admin/Agent Only)
+GET {{baseUrl}}/payments
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 6. Get All Payments with Status Filter
+GET {{baseUrl}}/payments?status=PENDING
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 7. Get All Payments with Method Filter
+GET {{baseUrl}}/payments?method=CREDIT_CARD
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 8. Get My Payments (Customer)
+GET {{baseUrl}}/payments/my-payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 9. Get User Payments (Admin)
+GET {{baseUrl}}/payments/user/user-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 10. Get Payment by Booking ID
+GET {{baseUrl}}/payments/booking/booking-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 11. Get Specific Payment
+GET {{baseUrl}}/payments/payment-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### PAYMENT UPDATE TESTS
+### ========================================
+
+### 12. Update Payment (Admin/Agent Only)
+PUT {{baseUrl}}/payments/payment-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 160.00,
+  "method": "CREDIT_CARD",
+  "transactionId": "TXN_CC_001_UPDATED"
+}
+
+###
+
+### 13. Update Payment Status to Completed
+PUT {{baseUrl}}/payments/payment-id-here/status
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+###
+
+### 14. Update Payment Status to Failed
+PUT {{baseUrl}}/payments/payment-id-here/status
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "FAILED"
+}
+
+###
+
+### ========================================
+### PAYMENT REFUND TESTS
+### ========================================
+
+### 15. Refund Payment (Admin/Agent Only)
+POST {{baseUrl}}/payments/payment-id-here/refund
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "reason": "Customer requested refund due to car issues"
+}
+
+###
+
+### ========================================
+### PAYMENT STATISTICS TESTS
+### ========================================
+
+### 16. Get Overall Payment Statistics (Admin/Agent Only)
+GET {{baseUrl}}/payments/stats/overall
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 17. Get User Payment Statistics
+GET {{baseUrl}}/payments/stats/user/user-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 18. Get My Payment Statistics
+GET {{baseUrl}}/payments/stats/user/user-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### PENDING APPROVALS TESTS
+### ========================================
+
+### 19. Get Pending Payment Approvals (Admin/Agent Only)
+GET {{baseUrl}}/payments/pending/approval
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### PAYMENT DELETE TESTS
+### ========================================
+
+### 20. Delete Payment (Admin Only)
+DELETE {{baseUrl}}/payments/payment-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### ERROR HANDLING TESTS
+### ========================================
+
+### 21. Try to Create Payment without Authentication (Should Fail)
+POST {{baseUrl}}/payments
+Content-Type: application/json
+
+{
+  "amount": 100.00,
+  "method": "CREDIT_CARD",
+  "status": "PENDING",
+  "transactionId": "TXN_TEST"
+}
+
+###
+
+### 22. Try to Create Payment with Invalid Method (Should Fail)
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 100.00,
+  "method": "INVALID_METHOD",
+  "status": "PENDING",
+  "transactionId": "TXN_TEST"
+}
+
+###
+
+### 23. Try to Create Payment with Negative Amount (Should Fail)
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": -50.00,
+  "method": "CREDIT_CARD",
+  "status": "PENDING",
+  "transactionId": "TXN_TEST"
+}
+
+###
+
+### 24. Try to Access All Payments as Customer (Should Fail)
+GET {{baseUrl}}/payments
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 25. Try to Update Payment Status with Invalid Status (Should Fail)
+PUT {{baseUrl}}/payments/payment-id-here/status
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "INVALID_STATUS"
+}
+
+###
+
+### 26. Try to Refund Non-completed Payment (Should Fail)
+POST {{baseUrl}}/payments/payment-id-here/refund
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "reason": "Test refund"
+}
+
+###
+
+### ========================================
+### PERFORMANCE TESTS
+### ========================================
+
+### 27. Test Multiple Payment Retrieval
+GET {{baseUrl}}/payments
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 28. Test Filtered Payment Retrieval
+GET {{baseUrl}}/payments?status=COMPLETED&method=CREDIT_CARD
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 29. Test Statistics Performance
+GET {{baseUrl}}/payments/stats/overall
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 30. Test Pending Approvals Performance
+GET {{baseUrl}}/payments/pending/approval
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+### 

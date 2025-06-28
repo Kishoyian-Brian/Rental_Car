@@ -56,9 +56,14 @@ export class ReviewService {
     }
   }
 
-  async findAll() {
+  async findAll(rating?: number, carId?: string) {
     try {
+      const where: any = {};
+      if (rating) where.rating = rating;
+      if (carId) where.carId = carId;
+
       const reviews = await this.prisma.review.findMany({
+        where,
         include: {
           user: {
             select: {
@@ -76,6 +81,7 @@ export class ReviewService {
             },
           },
         },
+        orderBy: { createdAt: 'desc' },
       });
 
       return this.apiResponse.ok(
@@ -202,8 +208,227 @@ export class ReviewService {
         });
       }
     } catch (error) {
-      // Log error but don't fail review creation
       console.error('Failed to send review notification emails:', error);
+    }
+  }
+
+  async findByUser(userId: string) {
+    try {
+      const reviews = await this.prisma.review.findMany({
+        where: { userId },
+        include: {
+          car: {
+            select: {
+              id: true,
+              make: true,
+              model: true,
+              year: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return this.apiResponse.ok(
+        reviews,
+        'User reviews retrieved successfully',
+        '',
+        reviews,
+      );
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to retrieve user reviews',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async update(id: string, updateReviewDto: any, userId: string) {
+    try {
+      const review = await this.prisma.review.findUnique({
+        where: { id },
+      });
+
+      if (!review) {
+        return this.apiResponse.notFound('Review not found');
+      }
+
+      // Users can only update their own reviews
+      if (review.userId !== userId) {
+        return this.apiResponse.badRequest('You can only update your own reviews');
+      }
+
+      const updatedReview = await this.prisma.review.update({
+        where: { id },
+        data: updateReviewDto,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+          car: {
+            select: {
+              id: true,
+              make: true,
+              model: true,
+              year: true,
+            },
+          },
+        },
+      });
+
+      return this.apiResponse.ok(
+        updatedReview,
+        'Review updated successfully',
+        '',
+        updatedReview,
+      );
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to update review',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      const review = await this.prisma.review.findUnique({
+        where: { id },
+      });
+
+      if (!review) {
+        return this.apiResponse.notFound('Review not found');
+      }
+
+      await this.prisma.review.delete({
+        where: { id },
+      });
+
+      return this.apiResponse.ok(
+        null,
+        'Review deleted successfully',
+        '',
+        null,
+      );
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to delete review',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async removeMyReview(id: string, userId: string) {
+    try {
+      const review = await this.prisma.review.findUnique({
+        where: { id },
+      });
+
+      if (!review) {
+        return this.apiResponse.notFound('Review not found');
+      }
+
+      if (review.userId !== userId) {
+        return this.apiResponse.badRequest('You can only delete your own reviews');
+      }
+
+      await this.prisma.review.delete({
+        where: { id },
+      });
+
+      return this.apiResponse.ok(
+        null,
+        'Review deleted successfully',
+        '',
+        null,
+      );
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to delete review',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async getOverallStats() {
+    try {
+      const totalReviews = await this.prisma.review.count();
+      const averageRating = await this.prisma.review.aggregate({
+        _avg: { rating: true },
+      });
+
+      const ratingDistribution = await this.prisma.review.groupBy({
+        by: ['rating'],
+        _count: { rating: true },
+      });
+
+      const stats = {
+        totalReviews,
+        averageRating: averageRating._avg.rating || 0,
+        ratingDistribution: ratingDistribution.reduce((acc, item) => {
+          acc[item.rating] = item._count.rating;
+          return acc;
+        }, {}),
+      };
+
+      return this.apiResponse.ok(
+        stats,
+        'Review statistics retrieved successfully',
+        '',
+        stats,
+      );
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to retrieve review statistics',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async getCarStats(carId: string) {
+    try {
+      const reviews = await this.prisma.review.findMany({
+        where: { carId },
+      });
+
+      const totalReviews = reviews.length;
+      const averageRating = totalReviews > 0 
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
+        : 0;
+
+      const ratingDistribution = reviews.reduce((acc, review) => {
+        acc[review.rating] = (acc[review.rating] || 0) + 1;
+        return acc;
+      }, {});
+
+      const stats = {
+        carId,
+        totalReviews,
+        averageRating,
+        ratingDistribution,
+      };
+
+      return this.apiResponse.ok(
+        stats,
+        'Car review statistics retrieved successfully',
+        '',
+        stats,
+      );
+    } catch (error) {
+      return this.apiResponse.error(
+        'Failed to retrieve car review statistics',
+        500,
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 } 

@@ -1,0 +1,266 @@
+### ========================================
+### REVIEW SYSTEM TESTS
+### ========================================
+### Use this file with VS Code REST Client extension
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### AUTHENTICATION (Get User Token)
+### ========================================
+
+### Login as Customer
+# @name loginCustomer
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "password123"
+}
+
+###
+
+### Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "brianmwasbayo@gmail.com",
+  "password": "brian123"
+}
+
+###
+
+### ========================================
+### REVIEW CREATION TESTS
+### ========================================
+
+### 1. Create Review (Customer)
+# @name createReview
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Excellent car! Very clean and well-maintained. Great fuel efficiency and smooth ride.",
+  "carId": "car-id-here"
+}
+
+###
+
+### 2. Create Review with 4 Stars
+# @name createReview4Stars
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "comment": "Good car overall. Comfortable seats and good handling. Minor issue with the radio.",
+  "carId": "car-id-here"
+}
+
+###
+
+### 3. Create Review with 3 Stars
+# @name createReview3Stars
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 3,
+  "comment": "Average experience. Car was functional but could use some maintenance.",
+  "carId": "car-id-here"
+}
+
+###
+
+### 4. Create Review without Comment
+# @name createReviewNoComment
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "carId": "car-id-here"
+}
+
+###
+
+### ========================================
+### REVIEW RETRIEVAL TESTS
+### ========================================
+
+### 5. Get All Reviews
+GET {{baseUrl}}/reviews
+
+###
+
+### 6. Get All Reviews with Rating Filter
+GET {{baseUrl}}/reviews?rating=5
+
+###
+
+### 7. Get All Reviews for Specific Car
+GET {{baseUrl}}/reviews?carId=car-id-here
+
+###
+
+### 8. Get Reviews by Car ID
+GET {{baseUrl}}/reviews/car/car-id-here
+
+###
+
+### 9. Get My Reviews (Customer)
+GET {{baseUrl}}/reviews/my-reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 10. Get User Reviews (Admin)
+GET {{baseUrl}}/reviews/user/user-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 11. Get Specific Review
+GET {{baseUrl}}/reviews/review-id-here
+
+###
+
+### ========================================
+### REVIEW UPDATE TESTS
+### ========================================
+
+### 12. Update My Review (Customer)
+PUT {{baseUrl}}/reviews/review-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "comment": "Updated review: Still a great car, but I noticed some minor issues after longer use."
+}
+
+###
+
+### 13. Try to Update Someone Else's Review (Should Fail)
+PUT {{baseUrl}}/reviews/review-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 1,
+  "comment": "This should fail - trying to update someone else's review"
+}
+
+###
+
+### ========================================
+### REVIEW DELETE TESTS
+### ========================================
+
+### 14. Delete My Review (Customer)
+DELETE {{baseUrl}}/reviews/my-review/review-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 15. Delete Review as Admin
+DELETE {{baseUrl}}/reviews/review-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### REVIEW STATISTICS TESTS
+### ========================================
+
+### 16. Get Overall Review Statistics
+GET {{baseUrl}}/reviews/stats/overall
+
+###
+
+### 17. Get Car-Specific Review Statistics
+GET {{baseUrl}}/reviews/stats/car/car-id-here
+
+###
+
+### ========================================
+### ERROR HANDLING TESTS
+### ========================================
+
+### 18. Try to Create Review without Authentication (Should Fail)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "This should fail - no authentication",
+  "carId": "car-id-here"
+}
+
+###
+
+### 19. Try to Create Review with Invalid Rating (Should Fail)
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 6,
+  "comment": "This should fail - rating too high",
+  "carId": "car-id-here"
+}
+
+###
+
+### 20. Try to Create Review with Negative Rating (Should Fail)
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 0,
+  "comment": "This should fail - rating too low",
+  "carId": "car-id-here"
+}
+
+###
+
+### 21. Try to Create Review for Non-existent Car (Should Fail)
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "This should fail - car doesn't exist",
+  "carId": "non-existent-car-id"
+}
+
+###
+
+### ========================================
+### PERFORMANCE TESTS
+### ========================================
+
+### 22. Test Multiple Review Retrieval
+GET {{baseUrl}}/reviews
+
+###
+
+### 23. Test Filtered Review Retrieval
+GET {{baseUrl}}/reviews?rating=5&carId=car-id-here
+
+###
+
+### 24. Test Statistics Performance
+GET {{baseUrl}}/reviews/stats/overall
+
+### 

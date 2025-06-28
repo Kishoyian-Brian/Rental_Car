@@ -2,7 +2,7 @@
 
 # Variables
 @baseUrl = http://localhost:3000
-@authToken = {{login.response.body.data.access_token}}
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMDE1ZmE2NC02Mzk0LTQ5NDMtYWRlNy00YTI3Njg4NTc4OTAiLCJlbWFpbCI6ImN1c3RvbWVyQGV4YW1wbGUuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzUxMDkxNzU0LCJleHAiOjE3NTEwOTUzNTR9.0ftySsgCdoqzMn_hJTUJa-_eLzOWcbh3Tel31LZRGTk
 
 ### Login to get token
 # @name login

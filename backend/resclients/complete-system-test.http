@@ -1,0 +1,583 @@
+### ========================================
+### COMPLETE CAR RENTAL SYSTEM - HTTP TESTS
+### ========================================
+
+@baseUrl = http://localhost:3000
+
+### ========================================
+### AUTHENTICATION ENDPOINTS
+### ========================================
+
+### 1. Register a new customer
+# @name registerCustomer
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "maxmillianmuiruri@gmail.com",
+  "password": "millian123",
+  "name": "Max Millian",
+  "phone": "+25412345667"
+}
+
+###
+
+### 2. Login customer
+# @name loginCustomer
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maxmillianmuiruri@gmail.com",
+  "password": "millian123"
+}
+
+###
+
+### 3. Create Admin (if needed)
+# @name createAdmin
+POST {{baseUrl}}/auth/create-admin
+Content-Type: application/json
+
+{
+  "email": "brianmwasbayo@gmail.com",
+  "password": "brian123",
+  "name": "System Admin",
+  "phone": "+1234567891"
+}
+
+###
+
+### 4. Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "brianmwasbayo@gmail.com",
+  "password": "brian123"
+}
+
+###
+
+### 5. Create Agent
+# @name createAgent
+POST {{baseUrl}}/auth/create-agent
+Content-Type: application/json
+
+{
+  "email": "brianmwangiat033@gmail.com",
+  "password": "agent123",
+  "name": "Rental Agent",
+  "phone": "+254747478237"
+}
+
+###
+
+### 6. Request password reset
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "maxmillianmuiruri@gmail.com"
+}
+
+###
+
+### ========================================
+### USER PROFILE ENDPOINTS
+### ========================================
+
+### 7. Get user profile (requires authentication)
+GET {{baseUrl}}/users/get-profile
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 8. Update user profile
+PUT {{baseUrl}}/users/update-profile
+Content-Type: application/json
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+{
+  "name": "Updated Max Millian",
+  "phone": "+25412345667"
+}
+
+###
+
+### 9. Update user password
+PUT {{baseUrl}}/users/update-profile
+Content-Type: application/json
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+{
+  "password": "newpassword123"
+}
+
+###
+
+### ========================================
+### CAR MANAGEMENT ENDPOINTS (Admin/Agent)
+### ========================================
+
+### 10. Create a new car (Admin/Agent only)
+POST {{baseUrl}}/cars
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2023,
+  "licensePlate": "CAM123",
+  "category": "MID_SIZE",
+  "transmission": "AUTOMATIC",
+  "fuelType": "GASOLINE",
+  "seats": 5,
+  "doors": 4,
+  "dailyRate": 75.00,
+  "hourlyRate": 15.00,
+  "features": ["Bluetooth", "Backup Camera", "Cruise Control", "GPS Navigation"],
+  "imageUrls": [],
+  "locationId": null
+}
+
+###
+
+### 11. Create another car
+POST {{baseUrl}}/cars
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "make": "Honda",
+  "model": "CR-V",
+  "year": 2022,
+  "licensePlate": "CRV456",
+  "category": "SUV",
+  "transmission": "AUTOMATIC",
+  "fuelType": "GASOLINE",
+  "seats": 7,
+  "doors": 5,
+  "dailyRate": 85.00,
+  "hourlyRate": 18.00,
+  "features": ["AWD", "Bluetooth", "Backup Camera", "Third Row Seating"],
+  "imageUrls": [],
+  "locationId": null
+}
+
+###
+
+### 12. Get all cars (public endpoint)
+GET {{baseUrl}}/cars
+
+###
+
+### 13. Get cars with filters
+GET {{baseUrl}}/cars?category=MID_SIZE&available=true&minDailyRate=50&maxDailyRate=100
+
+###
+
+### 14. Search cars
+GET {{baseUrl}}/cars/search?q=Toyota
+
+###
+
+### 15. Get car by ID (replace with actual car ID)
+GET {{baseUrl}}/cars/car-id-here
+
+###
+
+### 16. Update car (Admin/Agent only)
+PATCH {{baseUrl}}/cars/car-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "dailyRate": 80.00,
+  "features": ["Bluetooth", "Backup Camera", "Cruise Control", "GPS Navigation", "Heated Seats"]
+}
+
+###
+
+### 17. Toggle car availability
+PATCH {{baseUrl}}/cars/car-id-here/toggle-availability
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 18. Delete car (Admin only)
+DELETE {{baseUrl}}/cars/car-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### LOCATION MANAGEMENT ENDPOINTS
+### ========================================
+
+### 19. Create a new location (Admin/Agent only)
+POST {{baseUrl}}/locations
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Airport Branch",
+  "address": "456 Airport Blvd",
+  "city": "Los Angeles",
+  "state": "CA",
+  "zipCode": "90210"
+}
+
+###
+
+### 20. Get all locations
+GET {{baseUrl}}/locations
+
+###
+
+### 21. Get location by ID
+GET {{baseUrl}}/locations/location-id-here
+
+###
+
+### 22. Update location
+PUT {{baseUrl}}/locations/location-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Airport Branch",
+  "address": "456 Airport Blvd Suite 100",
+  "city": "Los Angeles",
+  "state": "CA",
+  "zipCode": "90210"
+}
+
+###
+
+### 23. Delete location
+DELETE {{baseUrl}}/locations/location-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### PAYMENT MANAGEMENT ENDPOINTS
+### ========================================
+
+### 24. Create a new payment (Admin/Agent only)
+POST {{baseUrl}}/payments
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "amount": 150.00,
+  "method": "CREDIT_CARD",
+  "userId": "user-id-here",
+  "transactionId": "TXN789012"
+}
+
+###
+
+### 25. Get all payments (Admin/Agent only)
+GET {{baseUrl}}/payments
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 26. Get payment by ID
+GET {{baseUrl}}/payments/payment-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 27. Update payment status
+PUT {{baseUrl}}/payments/payment-id-here/status
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+###
+
+### ========================================
+### REVIEW MANAGEMENT ENDPOINTS
+### ========================================
+
+### 28. Create a new review (Customer only)
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Excellent car! Very clean and reliable. Great experience overall.",
+  "carId": "car-id-here"
+}
+
+###
+
+### 29. Get all reviews
+GET {{baseUrl}}/reviews
+
+###
+
+### 30. Get reviews for specific car
+GET {{baseUrl}}/reviews/car/car-id-here
+
+###
+
+### 31. Get review by ID
+GET {{baseUrl}}/reviews/review-id-here
+
+###
+
+### ========================================
+### BOOKING MANAGEMENT ENDPOINTS
+### ========================================
+
+### 32. Create a new booking (Customer only)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "carId": "car-id-here",
+  "startDate": "2025-07-01T10:00:00Z",
+  "endDate": "2025-07-03T10:00:00Z"
+}
+
+###
+
+### 33. Get all bookings (Admin/Agent only)
+GET {{baseUrl}}/bookings
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 34. Get user's bookings (Customer only)
+GET {{baseUrl}}/bookings/my-bookings
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 35. Get booking by ID
+GET {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 36. Update booking
+PATCH {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2025-07-02T10:00:00Z",
+  "endDate": "2025-07-04T10:00:00Z"
+}
+
+###
+
+### 37. Cancel booking
+PATCH {{baseUrl}}/bookings/booking-id-here/cancel
+Authorization: Bearer {{loginCustomer.response.body.data.accessToken}}
+
+###
+
+### 38. Confirm booking (Admin/Agent only)
+PATCH {{baseUrl}}/bookings/booking-id-here/confirm
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 39. Complete booking (Admin/Agent only)
+PATCH {{baseUrl}}/bookings/booking-id-here/complete
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### 40. Delete booking (Admin only)
+DELETE {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+###
+
+### ========================================
+### EMAIL NOTIFICATION TESTS
+### ========================================
+
+### 41. Test email system
+POST {{baseUrl}}/mailer/test
+Content-Type: application/json
+
+{
+  "to": "test@example.com",
+  "subject": "RentCar System Test",
+  "message": "This is a test email from the RentCar system to verify email functionality."
+}
+
+###
+
+### 42. Check mailer health
+GET {{baseUrl}}/mailer/health
+
+###
+
+### ========================================
+### COMPLETE WORKFLOW TESTS
+### ========================================
+
+### 43. Complete Customer Journey Test
+### Step 1: Register customer
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "journey@example.com",
+  "password": "password123",
+  "name": "Journey Customer",
+  "phone": "+1234567899"
+}
+
+###
+
+### Step 2: Login customer
+# @name journeyLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "journey@example.com",
+  "password": "password123"
+}
+
+###
+
+### Step 3: Browse available cars
+GET {{baseUrl}}/cars?available=true
+
+###
+
+### Step 4: Create booking
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{journeyLogin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "carId": "car-id-here",
+  "startDate": "2025-07-05T10:00:00Z",
+  "endDate": "2025-07-07T10:00:00Z"
+}
+
+###
+
+### Step 5: View booking
+GET {{baseUrl}}/bookings/my-bookings
+Authorization: Bearer {{journeyLogin.response.body.data.accessToken}}
+
+###
+
+### Step 6: Leave review after completion
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{journeyLogin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "comment": "Great experience! Car was clean and well-maintained.",
+  "carId": "car-id-here"
+}
+
+###
+
+### ========================================
+### ERROR HANDLING TESTS
+### ========================================
+
+### 44. Test invalid login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### 45. Test unauthorized access
+GET {{baseUrl}}/cars
+Authorization: Bearer invalid-token
+
+###
+
+### 46. Test invalid car creation
+POST {{baseUrl}}/cars
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "make": "",
+  "model": "",
+  "year": 1800,
+  "licensePlate": "",
+  "category": "INVALID",
+  "transmission": "INVALID",
+  "fuelType": "INVALID",
+  "seats": -1,
+  "doors": 0,
+  "dailyRate": -10
+}
+
+###
+
+### ========================================
+### PERFORMANCE TESTS
+### ========================================
+
+### 47. Test multiple car retrieval
+GET {{baseUrl}}/cars
+
+###
+
+### 48. Test filtered car search
+GET {{baseUrl}}/cars?category=ECONOMY&available=true&minDailyRate=40&maxDailyRate=60
+
+###
+
+### 49. Test review retrieval
+GET {{baseUrl}}/reviews
+
+###
+
+### ========================================
+### ENVIRONMENT VARIABLES
+### ========================================
+
+# After running the tests, copy the actual IDs from responses and replace the placeholders:
+# @carId = actual-car-id-from-response
+# @bookingId = actual-booking-id-from-response
+# @paymentId = actual-payment-id-from-response
+# @locationId = actual-location-id-from-response
+# @reviewId = actual-review-id-from-response
+# @userId = actual-user-id-from-response
+
+### ========================================
+### USAGE INSTRUCTIONS
+### ========================================
+
+# 1. Install REST Client extension in VS Code
+# 2. Open this file in VS Code
+# 3. Click "Send Request" above any request to execute it
+# 4. Use the "Send Request" button or Ctrl+Alt+R (Cmd+Alt+R on Mac)
+# 5. Responses will appear in a new tab
+# 6. Copy actual IDs from responses and replace placeholders in subsequent requests
+# 7. Run tests in sequence to test complete workflows
+
+# Note: Some requests depend on previous requests (like using tokens or IDs)
+# Make sure to run authentication requests first to get valid tokens 
