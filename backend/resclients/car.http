@@ -1,0 +1,97 @@
+### Car Management API Tests
+
+# Variables
+@baseUrl = http://localhost:3000
+@authToken = {{login.response.body.data.access_token}}
+
+### Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### Create a new car (Admin/Agent only)
+POST {{baseUrl}}/cars
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2023,
+  "licensePlate": "ABC123",
+  "category": "MID_SIZE",
+  "transmission": "AUTOMATIC",
+  "fuelType": "GASOLINE",
+  "seats": 5,
+  "doors": 4,
+  "dailyRate": 75.00,
+  "hourlyRate": 15.00,
+  "features": ["Bluetooth", "Backup Camera", "Cruise Control"],
+  "imageUrls": [],
+  "locationId": "location-id-here"
+}
+
+### Get all cars
+GET {{baseUrl}}/cars
+
+### Get all cars with filters
+GET {{baseUrl}}/cars?category=MID_SIZE&available=true&minDailyRate=50&maxDailyRate=100
+
+### Search cars
+GET {{baseUrl}}/cars/search?q=Toyota
+
+### Get car by ID
+GET {{baseUrl}}/cars/car-id-here
+
+### Update car (Admin/Agent only)
+PATCH {{baseUrl}}/cars/car-id-here
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "dailyRate": 80.00,
+  "features": ["Bluetooth", "Backup Camera", "Cruise Control", "GPS Navigation"]
+}
+
+### Toggle car availability (Admin/Agent only)
+PATCH {{baseUrl}}/cars/car-id-here/toggle-availability
+Authorization: Bearer {{authToken}}
+
+### Upload car images (Admin/Agent only)
+POST {{baseUrl}}/cars/car-id-here/upload-images
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="images"; filename="car1.jpg"
+Content-Type: image/jpeg
+
+< ./car1.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Delete car (Admin only)
+DELETE {{baseUrl}}/cars/car-id-here
+Authorization: Bearer {{authToken}}
+
+### Sample car data for testing
+# {
+#   "make": "Honda",
+#   "model": "Civic",
+#   "year": 2022,
+#   "licensePlate": "XYZ789",
+#   "category": "COMPACT",
+#   "transmission": "AUTOMATIC",
+#   "fuelType": "GASOLINE",
+#   "seats": 5,
+#   "doors": 4,
+#   "dailyRate": 65.00,
+#   "hourlyRate": 12.00,
+#   "features": ["Bluetooth", "USB Ports"],
+#   "imageUrls": [],
+#   "locationId": "location-id-here"
+# } 

@@ -1,0 +1,86 @@
+### Booking Management API Tests
+
+# Variables
+@baseUrl = http://localhost:3000
+@authToken = {{login.response.body.data.access_token}}
+
+### Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "password123"
+}
+
+### Create a new booking (Customer)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "carId": "car-id-here",
+  "startDate": "2024-01-15T10:00:00Z",
+  "endDate": "2024-01-17T18:00:00Z"
+}
+
+### Get all bookings (Admin/Agent only)
+GET {{baseUrl}}/bookings
+Authorization: Bearer {{authToken}}
+
+### Get all bookings with status filter (Admin/Agent only)
+GET {{baseUrl}}/bookings?status=PENDING
+Authorization: Bearer {{authToken}}
+
+### Get my bookings (Customer)
+GET {{baseUrl}}/bookings/my-bookings
+Authorization: Bearer {{authToken}}
+
+### Get my bookings with status filter (Customer)
+GET {{baseUrl}}/bookings/my-bookings?status=CONFIRMED
+Authorization: Bearer {{authToken}}
+
+### Get booking by ID
+GET {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{authToken}}
+
+### Update booking
+PATCH {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2024-01-16T10:00:00Z",
+  "endDate": "2024-01-18T18:00:00Z"
+}
+
+### Cancel booking
+PATCH {{baseUrl}}/bookings/booking-id-here/cancel
+Authorization: Bearer {{authToken}}
+
+### Confirm booking (Admin/Agent only)
+PATCH {{baseUrl}}/bookings/booking-id-here/confirm
+Authorization: Bearer {{authToken}}
+
+### Complete booking (Admin/Agent only)
+PATCH {{baseUrl}}/bookings/booking-id-here/complete
+Authorization: Bearer {{authToken}}
+
+### Delete booking (Admin only)
+DELETE {{baseUrl}}/bookings/booking-id-here
+Authorization: Bearer {{authToken}}
+
+### Sample booking data for testing
+# {
+#   "carId": "car-uuid-here",
+#   "startDate": "2024-01-20T09:00:00Z",
+#   "endDate": "2024-01-22T17:00:00Z"
+# }
+
+### Booking statuses:
+# - PENDING: Initial booking state
+# - CONFIRMED: Booking confirmed by admin/agent
+# - ACTIVE: Booking is currently active
+# - COMPLETED: Booking has been completed
+# - CANCELLED: Booking has been cancelled 

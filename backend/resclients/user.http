@@ -1,0 +1,156 @@
+### User Authentication & Management API Tests
+
+# Base URL - Update this to match your server
+@baseUrl = http://localhost:3000
+
+### ========================================
+### AUTHENTICATION ENDPOINTS
+### ========================================
+
+# Register a new customer
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "password123",
+  "name": "John Customer",
+  "phone": "+1234567890"
+}
+
+###
+
+# Login user
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "password123"
+}
+
+###
+
+# Create Admin (requires admin privileges)
+POST {{baseUrl}}/auth/create-admin
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "name": "Admin User",
+  "phone": "+1234567891"
+}
+
+###
+
+# Create Agent (requires admin privileges)
+POST {{baseUrl}}/auth/create-agent
+Content-Type: application/json
+
+{
+  "email": "agent@example.com",
+  "password": "agent123",
+  "name": "Agent User",
+  "phone": "+1234567892"
+}
+
+###
+
+# Request password reset
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "customer@example.com"
+}
+
+###
+
+# Reset password with token
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "your-reset-token-here",
+  "newPassword": "newpassword123"
+}
+
+### ========================================
+### USER PROFILE ENDPOINTS (Requires JWT)
+### ========================================
+
+# Get user profile (requires authentication)
+GET {{baseUrl}}/users/get-profile
+Authorization: Bearer {{authToken}}
+
+###
+
+# Update user profile (requires authentication)
+PUT {{baseUrl}}/users/update-profile
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Updated Name",
+  "phone": "+1234567899"
+}
+
+###
+
+# Update user password (requires authentication)
+PUT {{baseUrl}}/users/update-profile
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "password": "newpassword123"
+}
+
+###
+
+# Soft delete account (requires authentication)
+DELETE {{baseUrl}}/users/delete
+Authorization: Bearer {{authToken}}
+
+### ========================================
+### ADMIN/AGENT ONLY ENDPOINTS
+### ========================================
+
+# Get all users (Admin only)
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Get user by ID (Admin/Agent only)
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+# Update user by ID (Admin only)
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Updated User Name",
+  "role": "AGENT",
+  "status": "ACTIVE"
+}
+
+###
+
+# Delete user by ID (Admin only)
+DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### ENVIRONMENT VARIABLES
+### ========================================
+
+# After login, copy the accessToken from the response and set it here
+# @authToken = your-jwt-token-here
+# @adminToken = admin-jwt-token-here
+# @userId = user-id-to-test-with 
