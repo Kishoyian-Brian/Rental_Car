@@ -1,0 +1,77 @@
+.bookings-container {
+  max-width: 900px;
+  margin: 2.5rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(255, 115, 0, 0.08);
+}
+.bookings-title {
+  color: #ff7300;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.no-bookings {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  margin: 2rem 0;
+}
+.bookings-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+}
+.booking-card {
+  background: #fff7ed;
+  border-radius: 0.7rem;
+  box-shadow: 0 2px 12px rgba(255, 115, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 270px;
+  padding: 1.2rem 1rem 1rem 1rem;
+  transition: box-shadow 0.2s;
+}
+.booking-card:hover {
+  box-shadow: 0 8px 24px rgba(255, 115, 0, 0.13);
+}
+.booking-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+.booking-info {
+  width: 100%;
+  text-align: left;
+}
+.booking-car {
+  color: #ff7300;
+  font-size: 1.15rem;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+.booking-dates {
+  color: #555;
+  font-size: 0.98rem;
+  margin-bottom: 0.2rem;
+}
+.booking-price {
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+.booking-status {
+  font-size: 0.98rem;
+  margin-top: 0.2rem;
+}
+.status-pending { color: #ff9800; font-weight: bold; }
+.status-confirmed { color: #388e3c; font-weight: bold; }
+.status-active { color: #1976d2; font-weight: bold; }
+.status-completed { color: #388e3c; font-weight: bold; }
+.status-cancelled { color: #d32f2f; font-weight: bold; }

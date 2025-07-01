@@ -1,0 +1,15 @@
+<div class="bookings-container">
+  <h2 class="bookings-title">My Bookings</h2>
+  <div *ngIf="bookings.length === 0" class="no-bookings">No bookings found.</div>
+  <div class="bookings-list">
+    <div *ngFor="let booking of bookings" class="booking-card">
+      <img [src]="booking.car.imageUrls && booking.car.imageUrls.length ? booking.car.imageUrls[0] : 'https://placehold.co/300x150?text=No+Image'" class="booking-img" [alt]="booking.car.make + ' ' + booking.car.model" />
+      <div class="booking-info">
+        <h3 class="booking-car">{{ booking.car.make }} {{ booking.car.model }}</h3>
+        <div class="booking-dates">{{ booking.startDate | date:'mediumDate' }} - {{ booking.endDate | date:'mediumDate' }}</div>
+        <div class="booking-price">Total: ${{ booking.totalPrice }}</div>
+        <div class="booking-status">Status: <span [ngClass]="'status-' + booking.status.toLowerCase()">{{ booking.status }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>

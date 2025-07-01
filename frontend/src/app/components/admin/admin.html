@@ -1,0 +1,302 @@
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>Car Rental Admin</h3>
+    <p>Administrator</p>
+  </div>
+  <div class="sidebar-menu">
+    <ul>
+      <li class="active">
+        <a href="#" (click)="$event.preventDefault()">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li [class.active]="dashboardSection === 'cars'">
+        <a href="#cars-section" (click)="$event.preventDefault(); setSection('cars')">
+          <i class="fas fa-car"></i>
+          <span>All Cars</span>
+        </a>
+      </li>
+      <li [class.active]="dashboardSection === 'bookings'">
+        <a href="#bookings-section" (click)="$event.preventDefault(); setSection('bookings')">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+      </li>
+      <li [class.active]="dashboardSection === 'reviews'">
+        <a href="#reviews-section" (click)="$event.preventDefault(); setSection('reviews')">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" (click)="$event.preventDefault(); startAddCar()">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add New Car</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="header">
+    <h2>Dashboard</h2>
+    <div class="user-area">
+      <img src="https://via.placeholder.com/40" alt="Admin">
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="cards">
+    <div class="card blue">
+      <h3>Total Cars</h3>
+      <p>{{ cars.length }}</p>
+    </div>
+    <div class="card green">
+      <h3>Active Bookings</h3>
+      <p>{{ bookings.length }}</p>
+    </div>
+    <div class="card orange">
+      <h3>Pending Reviews</h3>
+      <p>{{ reviews.length }}</p>
+    </div>
+    <div class="card red">
+      <h3>Revenue</h3>
+      <p>${{ totalRevenue | number:'1.0-2' }}</p>
+    </div>
+  </div>
+
+  <!-- Cars Section -->
+  <section *ngIf="dashboardSection === 'cars'" id="cars-section">
+    <h3>All Cars</h3>
+    <div class="car-cards">
+      <div class="car-card" *ngFor="let car of cars">
+        <img *ngIf="car.imageUrls && car.imageUrls.length" [src]="car.imageUrls[0]" alt="Car" />
+        <div class="car-card-details">
+          <h4>{{ car.make }} {{ car.model }} ({{ car.year }})</h4>
+          <p><strong>Category:</strong> {{ car.category }}</p>
+          <p><strong>Transmission:</strong> {{ car.transmission }}</p>
+          <p><strong>Fuel:</strong> {{ car.fuelType }}</p>
+          <p><strong>Seats:</strong> {{ car.seats }}, <strong>Doors:</strong> {{ car.doors }}</p>
+          <p><strong>Daily Rate:</strong> ${{ car.dailyRate | number:'1.0-2' }}</p>
+          <p><strong>Location:</strong> {{ car.location?.name || '-' }}</p>
+          <p><strong>Features:</strong> <span *ngFor="let f of car.features; let last = last">{{ f }}<span *ngIf="!last">, </span></span></p>
+        </div>
+        <div class="car-card-actions">
+          <button (click)="editCar(car)">Edit</button>
+          <button (click)="deleteCar(car)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bookings Section -->
+  <section *ngIf="dashboardSection === 'bookings'" id="bookings-section">
+    <h3>All Bookings</h3>
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Car</th>
+          <th>User</th>
+          <th>Status</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Total Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings">
+          <td>{{ booking.id }}</td>
+          <td>{{ booking.car.make }} {{ booking.car.model }}</td>
+          <td>-</td>
+          <td>{{ booking.status }}</td>
+          <td>{{ booking.startDate | date:'short' }}</td>
+          <td>{{ booking.endDate | date:'short' }}</td>
+          <td>${{ booking.totalPrice | number:'1.0-2' }}</td>
+          <td>
+            <button class="accept" (click)="acceptBooking(booking)">Accept</button>
+            <button class="reject" (click)="rejectBooking(booking)">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Reviews Section -->
+  <section *ngIf="dashboardSection === 'reviews'" id="reviews-section">
+    <h3>All Reviews</h3>
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Car</th>
+          <th>User</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let review of reviews">
+          <td>{{ review.id }}</td>
+          <td>
+            <ng-container *ngIf="review.car && review.car.make && review.car.model; else noCar">
+              {{ review.car.make }} {{ review.car.model }}
+            </ng-container>
+            <ng-template #noCar>-</ng-template>
+          </td>
+          <td>{{ review.user?.email || review.userId }}</td>
+          <td>{{ review.rating }}</td>
+          <td>{{ review.comment }}</td>
+          <td>{{ review.createdAt | date:'short' }}</td>
+          <td>
+            <button (click)="editReview(review)">Edit</button>
+            <button (click)="deleteReview(review)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Sliding Car Details Panel -->
+  <div class="car-details-panel" [class.open]="showDetails" *ngIf="showDetails">
+    <button class="close-btn" (click)="closeDetails()">&times;</button>
+    <div *ngIf="selectedCar">
+      <h2>{{ selectedCar.make }} {{ selectedCar.model }} ({{ selectedCar.year }})</h2>
+      <div class="car-images">
+        <img *ngFor="let img of selectedCar.imageUrls" [src]="img" alt="Car image" />
+      </div>
+      <ul class="car-info-list">
+        <li><strong>Category:</strong> {{ selectedCar.category }}</li>
+        <li><strong>Transmission:</strong> {{ selectedCar.transmission }}</li>
+        <li><strong>Fuel Type:</strong> {{ selectedCar.fuelType }}</li>
+        <li><strong>Seats:</strong> {{ selectedCar.seats }}</li>
+        <li><strong>Doors:</strong> {{ selectedCar.doors }}</li>
+        <li><strong>Daily Rate:</strong> ${{ selectedCar.dailyRate | number:'1.0-2' }}</li>
+        <li><strong>Location:</strong> {{ selectedCar.location?.name || '-' }}</li>
+        <li><strong>Features:</strong> <span *ngFor="let f of selectedCar.features; let last = last">{{ f }}<span *ngIf="!last">, </span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Toast Message -->
+  <div class="toast-message" *ngIf="toastMessage">
+    {{ toastMessage }}
+    <ng-container *ngIf="showDeleteConfirm">
+      <div class="toast-actions">
+        <button class="confirm" (click)="confirmDelete()">Confirm</button>
+        <button class="cancel" (click)="cancelDelete()">Cancel</button>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Add Car Modal -->
+  <div class="add-car-modal" *ngIf="showAddCarModal">
+    <div class="modal-content">
+      <h2>Add New Car</h2>
+      <form [formGroup]="carForm" (ngSubmit)="submitCar()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Make</label>
+            <input formControlName="make" required />
+          </div>
+          <div class="form-group">
+            <label>Model</label>
+            <input formControlName="model" required />
+          </div>
+          <div class="form-group">
+            <label>Year</label>
+            <input type="number" formControlName="year" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>License Plate</label>
+            <input formControlName="licensePlate" required />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select formControlName="category" required>
+              <option *ngFor="let c of carCategories" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Transmission</label>
+            <select formControlName="transmission" required>
+              <option *ngFor="let t of transmissions" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fuel Type</label>
+            <select formControlName="fuelType" required>
+              <option *ngFor="let f of fuelTypes" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Seats</label>
+            <input type="number" formControlName="seats" required />
+          </div>
+          <div class="form-group">
+            <label>Doors</label>
+            <input type="number" formControlName="doors" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Daily Rate</label>
+            <input type="number" formControlName="dailyRate" required />
+          </div>
+          <div class="form-group">
+            <label>Hourly Rate</label>
+            <input type="number" formControlName="hourlyRate" />
+          </div>
+          <div class="form-group">
+            <label>Available</label>
+            <input type="checkbox" formControlName="available" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Location</label>
+            <select formControlName="locationId">
+              <option value="">Select Location</option>
+              <option *ngFor="let loc of locations" [value]="loc.id">{{ loc.name }}</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2;">
+            <label>Features</label>
+            <div class="features-list">
+              <div *ngFor="let feature of featuresControls; let i = index">
+                <input [formControl]="feature" placeholder="Feature" />
+                <button type="button" (click)="removeFeature(i)">Remove</button>
+              </div>
+              <button type="button" (click)="addFeature()">Add Feature</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Images</label>
+            <input type="file" (change)="onImageChange($event)" multiple />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="cancelAddCar()">Cancel</button>
+          <button type="submit" [disabled]="carForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- The rest of the dashboard (tables, modals) will be updated next -->
+  <ng-content></ng-content>
+</div>

@@ -1,0 +1,349 @@
+<!-- Header (copied from landing page) -->
+<header class="header">
+  <div class="header-container">
+    <div class="header-logo">
+      <span class="logo-text">DreamCar</span>
+    </div>
+    <nav class="header-nav">
+      <a href="#" class="nav-link">Book Now</a>
+      <a href="#" class="nav-link">About us</a>
+      <div class="dropdown">
+        <button class="dropbtn">Sign In</button>
+        <div class="dropdown-content">
+          <a routerLink="/login" [queryParams]="{mode: 'login'}">Login</a>
+          <a routerLink="/login" [queryParams]="{mode: 'register'}">Register</a>
+          <a href="#">Bookings</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div class="main-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>Search</h3>
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="Search cars..." 
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          class="search-input"
+        >
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Categories</h3>
+      <div class="category-filters">
+        <label *ngFor="let category of categories" class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedCategories.includes(category)" 
+            (change)="toggleCategory(category)" 
+          /> {{ category }}
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Brands</h3>
+      <div class="brand-filters">
+        <label *ngFor="let brand of brands" class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedBrands.includes(brand)" 
+            (change)="toggleBrand(brand)" 
+          /> {{ brand }}
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Price Range</h3>
+      <div class="price-range">
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="priceRange === '0-50'" 
+            (change)="setPriceRange('0-50')" 
+          /> $0 - $50
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="priceRange === '51-100'" 
+            (change)="setPriceRange('51-100')" 
+          /> $51 - $100
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="priceRange === '101-150'" 
+            (change)="setPriceRange('101-150')" 
+          /> $101 - $150
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="priceRange === '151+'" 
+            (change)="setPriceRange('151+')" 
+          /> $151+
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Transmission</h3>
+      <div class="transmission-filters">
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedTransmissions.includes('AUTOMATIC')" 
+            (change)="toggleTransmission('AUTOMATIC')" 
+          /> Automatic
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedTransmissions.includes('MANUAL')" 
+            (change)="toggleTransmission('MANUAL')" 
+          /> Manual
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Fuel Type</h3>
+      <div class="fuel-filters">
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedFuelTypes.includes('GASOLINE')" 
+            (change)="toggleFuelType('GASOLINE')" 
+          /> Gasoline
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedFuelTypes.includes('DIESEL')" 
+            (change)="toggleFuelType('DIESEL')" 
+          /> Diesel
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedFuelTypes.includes('ELECTRIC')" 
+            (change)="toggleFuelType('ELECTRIC')" 
+          /> Electric
+        </label>
+        <label class="sidebar-label">
+          <input 
+            type="checkbox" 
+            class="sidebar-checkbox" 
+            [checked]="selectedFuelTypes.includes('HYBRID')" 
+            (change)="toggleFuelType('HYBRID')" 
+          /> Hybrid
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="clear-filters-btn" (click)="clearAllFilters()">Clear All Filters</button>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="content-header">
+      <h1>All Available Cars</h1>
+      <div class="results-info">
+        <span class="results-count">{{ filteredCars.length }} cars found</span>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div *ngIf="filteredCars.length === 0" class="no-results">
+      <div class="no-results-content">
+        <h3>No cars found</h3>
+        <p>Try adjusting your filters or search terms</p>
+        <button class="clear-filters-btn" (click)="clearAllFilters()">Clear All Filters</button>
+      </div>
+    </div>
+
+    <!-- Cars Grid -->
+    <div *ngIf="filteredCars.length > 0" class="cars-grid">
+      <div class="car-card" *ngFor="let car of filteredCars">
+        <div class="car-image-wrapper">
+          <img 
+            [src]="getCarImageUrl(car)" 
+            [alt]="car.make + ' ' + car.model" 
+            class="car-image"
+            (error)="onImageError($event)"
+          >
+          <div *ngIf="!car.available" class="car-badge unavailable">Unavailable</div>
+          <div *ngIf="car.available" class="car-badge available">Available</div>
+        </div>
+        <div class="car-info">
+          <h4>{{ car.make }} {{ car.model }}</h4>
+          <p class="car-meta">{{ car.year }} &bull; {{ car.category }} &bull; {{ car.transmission }}</p>
+          <p class="car-features">{{ car.seats }} seats &bull; {{ car.doors }} doors &bull; {{ car.fuelType }}</p>
+          <div class="car-price-section">
+            <p class="car-price">${{ car.dailyRate }}/day</p>
+            <p *ngIf="car.hourlyRate" class="car-hourly-price">${{ car.hourlyRate }}/hour</p>
+          </div>
+          <div class="car-actions">
+            <button 
+              class="book-btn" 
+              [disabled]="!car.available"
+              (click)="bookCar(car)"
+            >
+              {{ car.available ? 'Book Now' : 'Unavailable' }}
+            </button>
+            <button class="details-btn" (click)="viewDetails(car)">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Car Details Modal -->
+<div *ngIf="showDetailsModal" class="modal-overlay" (click)="closeDetailsModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Car Details</h2>
+      <button class="modal-close" (click)="closeDetailsModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedCar">
+      <!-- Car Images -->
+      <div class="car-images-section">
+        <div class="main-image">
+          <img 
+            [src]="getCarImageUrl(selectedCar)" 
+            [alt]="selectedCar.make + ' ' + selectedCar.model"
+            (error)="onImageError($event)"
+          >
+        </div>
+        <div class="image-gallery" *ngIf="selectedCar.imageUrls && selectedCar.imageUrls.length > 1">
+          <img 
+            *ngFor="let imageUrl of selectedCar.imageUrls.slice(1, 5)" 
+            [src]="imageUrl" 
+            [alt]="selectedCar.make + ' ' + selectedCar.model"
+            class="gallery-thumbnail"
+          >
+        </div>
+      </div>
+
+      <!-- Car Basic Info -->
+      <div class="car-basic-info">
+        <h3>{{ selectedCar.make }} {{ selectedCar.model }}</h3>
+        <div class="car-badges">
+          <span class="info-badge">{{ selectedCar.year }}</span>
+          <span class="info-badge">{{ getCategoryLabel(selectedCar.category) }}</span>
+          <span class="info-badge">{{ getTransmissionLabel(selectedCar.transmission) }}</span>
+          <span class="info-badge" [class.available]="selectedCar.available" [class.unavailable]="!selectedCar.available">
+            {{ selectedCar.available ? 'Available' : 'Unavailable' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Car Specifications -->
+      <div class="car-specifications">
+        <h4>Specifications</h4>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <span class="spec-label">Make:</span>
+            <span class="spec-value">{{ selectedCar.make }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Model:</span>
+            <span class="spec-value">{{ selectedCar.model }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Year:</span>
+            <span class="spec-value">{{ selectedCar.year }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">License Plate:</span>
+            <span class="spec-value">{{ selectedCar.licensePlate }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Category:</span>
+            <span class="spec-value">{{ getCategoryLabel(selectedCar.category) }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Transmission:</span>
+            <span class="spec-value">{{ getTransmissionLabel(selectedCar.transmission) }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Fuel Type:</span>
+            <span class="spec-value">{{ getFuelTypeLabel(selectedCar.fuelType) }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Seats:</span>
+            <span class="spec-value">{{ selectedCar.seats }} persons</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Doors:</span>
+            <span class="spec-value">{{ selectedCar.doors }} doors</span>
+          </div>
+          <div class="spec-item" *ngIf="selectedCar.locationId">
+            <span class="spec-label">Location:</span>
+            <span class="spec-value">{{ getLocationName(selectedCar.locationId) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="car-pricing">
+        <h4>Pricing</h4>
+        <div class="pricing-info">
+          <div class="price-item">
+            <span class="price-label">Daily Rate:</span>
+            <span class="price-value">${{ selectedCar.dailyRate }}/day</span>
+          </div>
+          <div class="price-item" *ngIf="selectedCar.hourlyRate">
+            <span class="price-label">Hourly Rate:</span>
+            <span class="price-value">${{ selectedCar.hourlyRate }}/hour</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="car-features-section" *ngIf="selectedCar.features && selectedCar.features.length > 0">
+        <h4>Features</h4>
+        <div class="features-list">
+          <span class="feature-tag" *ngFor="let feature of selectedCar.features">{{ feature }}</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="modal-actions">
+        <button 
+          class="book-now-btn" 
+          [disabled]="!selectedCar.available"
+          (click)="bookCar(selectedCar)"
+        >
+          {{ selectedCar.available ? 'Book Now' : 'Currently Unavailable' }}
+        </button>
+        <button class="close-btn" (click)="closeDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<div class="login-bg">
+  <div class="login-container">
+    <!-- Header -->
+    <div class="form-header">
+      <h2>{{ isLoginMode ? 'Welcome to DreamCar' : 'Create your Account' }}</h2>
+      <p>
+        {{ isLoginMode ? 'Login to explore amazing deals' : 'Create your account to start your journey' }}
+      </p>
+    </div>
+
+    <!-- Auth Error -->
+    <div *ngIf="error" class="form-error">
+      {{ error }}
+    </div>
+    <div *ngIf="registrationSuccessMessage" class="form-success">
+      {{ registrationSuccessMessage }}
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+      <form *ngIf="isLoginMode" (ngSubmit)="onLogin()" #loginForm="ngForm">
+        <input type="email" name="email" [(ngModel)]="email" required placeholder="Email" class="form-input" />
+        <input type="password" name="password" [(ngModel)]="password" required placeholder="Password" class="form-input" />
+        <button type="submit" class="form-btn">
+          {{ isLoading ? 'Signing in...' : 'Sign In' }}
+        </button>
+      </form>
+
+      <form *ngIf="!isLoginMode" (ngSubmit)="onRegister()" #registerForm="ngForm">
+        <input type="text" name="name" [(ngModel)]="registerData.name" placeholder="Full Name (optional)" class="form-input" />
+        <input type="email" name="email" [(ngModel)]="registerData.email" required placeholder="Email" class="form-input" />
+        <input type="password" name="password" [(ngModel)]="registerData.password" required placeholder="Password" class="form-input" />
+        <button type="submit" class="form-btn">
+          {{ isLoading ? 'Registering...' : 'Create Account' }}
+        </button>
+      </form>
+
+      <p class="form-switch">
+        {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+        <button type="button" (click)="toggleMode()" class="form-link">
+          {{ isLoginMode ? 'Register' : 'Sign In' }}
+        </button>
+      </p>
+    </div>
+  </div>
+</div>

@@ -50,6 +50,8 @@ export class CarService {
 
   async createWithImages(createCarDto: CreateCarDto, files?: Express.Multer.File[]) {
     try {
+      console.log('Received createCarDto:', createCarDto);
+      console.log('Received files:', files);
       const existingCar = await this.prisma.car.findUnique({
         where: { licensePlate: createCarDto.licensePlate },
       });
@@ -66,14 +68,31 @@ export class CarService {
         );
         const uploadResults = await Promise.all(uploadPromises);
         imageUrls = uploadResults;
+        console.log('Uploaded image URLs:', imageUrls);
       }
 
       // Combine existing imageUrls with uploaded ones
-      const allImageUrls = [...(createCarDto.imageUrls || []), ...imageUrls];
+      // Parse fields from FormData to correct types
+      const parsedData = {
+        ...createCarDto,
+        year: Number(createCarDto.year),
+        seats: Number(createCarDto.seats),
+        doors: Number(createCarDto.doors),
+        dailyRate: Number(createCarDto.dailyRate),
+        hourlyRate: createCarDto.hourlyRate !== undefined ? Number(createCarDto.hourlyRate) : 0,
+        available:
+          typeof createCarDto.available === 'string'
+            ? createCarDto.available === 'true'
+            : Boolean(createCarDto.available),
+        features: typeof createCarDto.features === 'string' ? JSON.parse(createCarDto.features) : (createCarDto.features || []),
+        imageUrls: typeof createCarDto.imageUrls === 'string' ? JSON.parse(createCarDto.imageUrls) : (createCarDto.imageUrls || []),
+      };
+      const allImageUrls = [...(parsedData.imageUrls || []), ...imageUrls];
+      console.log('Final imageUrls to save:', allImageUrls);
 
       const car = await this.prisma.car.create({
         data: {
-          ...createCarDto,
+          ...parsedData,
           imageUrls: allImageUrls,
         },
         include: {
@@ -87,9 +106,11 @@ export class CarService {
           },
         },
       });
+      console.log('Created car:', car);
 
       return this.apiResponse.ok(car, 'Car created successfully with images', '', car);
     } catch (error) {
+      console.error('Error in createWithImages:', error);
       return this.apiResponse.error(
         'Failed to create car with images',
         500,

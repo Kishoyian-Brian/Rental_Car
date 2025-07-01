@@ -1,0 +1,114 @@
+<div class="user-bg">
+  <!-- Header -->
+  <header class="user-header">
+    <h1 class="user-title">Car Rentals</h1>
+    <div class="user-header-actions">
+      <input type="text" placeholder="Search for a Car..." class="user-search" [(ngModel)]="searchTerm" (input)="onSearch()" (keyup.enter)="onSearch()" />
+      <button class="user-search-btn" (click)="onSearch()">Search</button>
+      <a class="user-bookings-link" routerLink="/user-bookings">Bookings</a>
+    </div>
+  </header>
+
+  <div class="user-main">
+    <!-- Sidebar Filters -->
+    <aside class="user-sidebar">
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">Categories</h2>
+        <div class="sidebar-categories">
+          <button 
+            *ngFor="let category of categories" 
+            class="sidebar-category" 
+            [class.selected-category]="selectedCategory === category.value"
+            (click)="filterByCategory(category.value)"
+          >
+            {{ category.label }}
+          </button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h2 class="sidebar-title">Brands</h2>
+        <div class="sidebar-brands">
+          <button 
+            *ngFor="let brand of brands" 
+            class="sidebar-brand" 
+            [class.selected-brand]="selectedBrand === brand" 
+            (click)="filterByBrand(brand)"
+          >
+            {{ brand }}
+          </button>
+        </div>
+      </div>
+      <div class="sidebar-logout">
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
+      <div class="sidebar-clear">
+        <button class="clear-btn" (click)="clearFilters()">Clear Filters</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="user-content">
+      <div class="user-features">
+        <div class="user-feature">Easy Booking</div>
+        <div class="user-feature">Secure Payments</div>
+        <div class="user-feature">24/7 Tracking</div>
+      </div>
+
+      <div class="user-results">
+        <p class="results-count">{{ cars.length }} car{{ cars.length !== 1 ? 's' : '' }} found</p>
+      </div>
+
+      <div class="user-cars">
+        <div *ngFor="let car of cars" class="user-car-card" (click)="openModal(car)">
+          <img [src]="car.imageUrls && car.imageUrls.length ? car.imageUrls[0] : 'https://placehold.co/400x200?text=No+Image'" class="user-car-img" [alt]="car.make + ' ' + car.model" />
+          <h3 class="user-car-title">{{ car.make }} {{ car.model }}</h3>
+          <p class="user-car-desc">{{ car.transmission }} · {{ car.seats }} Persons</p>
+          <div class="user-car-info">
+            <span class="user-car-price">${{ car.dailyRate }}/Day</span>
+            <span>⭐ {{ car.averageRating || 0 | number:'1.1-1' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- No results message -->
+      <div *ngIf="cars.length === 0" class="no-results">
+        <p>No cars found matching your criteria.</p>
+        <p>Try adjusting your filters or search terms.</p>
+      </div>
+
+      <!-- Modal Overlay -->
+      <div class="modal-overlay" *ngIf="showModal">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <button class="modal-close" (click)="closeModal()">&times;</button>
+          <img [src]="selectedCar?.imageUrls && selectedCar?.imageUrls.length ? selectedCar.imageUrls[0] : 'https://placehold.co/400x200?text=No+Image'" class="modal-img modal-img-full" [alt]="selectedCar?.make + ' ' + selectedCar?.model" />
+          <h2 class="modal-title">{{ selectedCar?.make }} {{ selectedCar?.model }}</h2>
+          <p class="modal-desc">Year: {{ selectedCar?.year }} | {{ selectedCar?.transmission }} | {{ selectedCar?.seats }} Persons</p>
+          <p class="modal-desc">Price: ${{ selectedCar?.dailyRate }}/Day</p>
+          <p class="modal-desc">Features: {{ selectedCar?.features?.join(', ') || 'None' }}</p>
+
+          <div *ngIf="bookingSuccess" class="modal-success-message">
+            <span>Booking successful! Thank you for your reservation.</span>
+          </div>
+          <form *ngIf="!bookingSuccess" (ngSubmit)="bookCar()" class="modal-book-form">
+            <div class="modal-form-group">
+              <label>Start Date:</label>
+              <input type="date" [(ngModel)]="bookingStartDate" name="modalStartDate" required />
+            </div>
+            <div class="modal-form-group">
+              <label>End Date:</label>
+              <input type="date" [(ngModel)]="bookingEndDate" name="modalEndDate" required />
+            </div>
+            <div class="modal-form-group">
+              <label>Pickup Location:</label>
+              <select [(ngModel)]="bookingLocationId" name="modalLocationId" required>
+                <option value="" disabled>Select Location</option>
+                <option *ngFor="let loc of locations" [value]="loc.id">{{ loc.name }} ({{ loc.city }})</option>
+              </select>
+            </div>
+            <button class="modal-book-btn" type="submit">Book</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

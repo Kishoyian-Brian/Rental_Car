@@ -26,7 +26,7 @@ export class CloudinaryService {
     try {
       const result = await cloudinary.uploader.upload(file.path, {
         resource_type: 'image',
-        folder: 'shoppie-products',
+        folder: 'CarRent',
       });
       return result.secure_url;
     } catch (error) {
@@ -36,7 +36,6 @@ export class CloudinaryService {
 
   async uploadImageBuffer(buffer: Buffer, filename: string): Promise<string> {
     if (!this.isConfigured) {
-      // Return a placeholder URL if Cloudinary is not configured
       return 'https://via.placeholder.com/400x400?text=Product+Image';
     }
 
@@ -44,7 +43,7 @@ export class CloudinaryService {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           resource_type: 'image',
-          folder: 'shoppie-products',
+          folder: 'CarRent',
         },
         (error, result) => {
           if (error) {
