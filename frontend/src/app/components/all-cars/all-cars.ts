@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { LocationService, Location } from '../../services/location-service';
   templateUrl: './all-cars.html',
   styleUrls: ['./all-cars.css']
 })
-export class AllCars implements OnInit {
+export class AllCars implements OnInit, OnDestroy {
   cars: Car[] = [];
   filteredCars: Car[] = [];
   
@@ -36,6 +36,8 @@ export class AllCars implements OnInit {
   selectedCar: Car | null = null;
   showDetailsModal: boolean = false;
   locations: Location[] = [];
+  popupVisible: boolean = false;
+  popupInterval: any;
 
   constructor(
     private carService: CarService,
@@ -62,11 +64,24 @@ export class AllCars implements OnInit {
         // Handle error silently or show user-friendly message
       }
     });
+    // Show popup every 2 seconds
+    this.popupInterval = setInterval(() => {
+      this.popupVisible = true;
+    }, 2000);
   }
 
   extractBrands() {
-    const uniqueBrands = new Set(this.cars.map(car => car.make));
-    this.brands = Array.from(uniqueBrands).sort();
+    // Deduplicate brands case-insensitively and display with consistent casing
+    const brandMap = new Map<string, string>();
+    this.cars.forEach(car => {
+      const brandLower = car.make.trim().toLowerCase();
+      if (!brandMap.has(brandLower)) {
+        // Capitalize first letter, rest lowercase
+        const formatted = car.make.charAt(0).toUpperCase() + car.make.slice(1).toLowerCase();
+        brandMap.set(brandLower, formatted);
+      }
+    });
+    this.brands = Array.from(brandMap.values()).sort();
   }
 
   applyFilters() {
@@ -235,5 +250,15 @@ export class AllCars implements OnInit {
       'HYBRID': 'Hybrid'
     };
     return fuelMap[fuelType] || fuelType;
+  }
+
+  closePopup() {
+    this.popupVisible = false;
+  }
+
+  ngOnDestroy() {
+    if (this.popupInterval) {
+      clearInterval(this.popupInterval);
+    }
   }
 }

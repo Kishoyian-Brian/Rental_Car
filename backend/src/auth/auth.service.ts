@@ -174,6 +174,50 @@ export class AuthService {
     }
   }
 
+  async createAgent(agentData: CreateUserDto) {
+    try {
+      // Check if user already exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: agentData.email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('User with this email already exists');
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(agentData.password, 10);
+
+      // Create agent user with PENDING status (requires admin approval)
+      const agent = await this.prisma.user.create({
+        data: {
+          email: agentData.email,
+          password: hashedPassword,
+          name: agentData.name,
+          phone: agentData.phone,
+          role: 'AGENT',
+          status: 'PENDING',
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Agent created successfully. They will need admin approval before they can log in.',
+        data: agent,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async requestPasswordReset(dto: { email: string }) {
     // Always return a generic message for security
     const genericMsg = { message: 'If this email exists, a password reset link has been sent.' };

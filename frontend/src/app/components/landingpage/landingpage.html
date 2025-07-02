@@ -5,14 +5,14 @@
       <span class="logo-text">DreamCar</span>
     </div>
     <nav class="header-nav">
-      <a href="#" class="nav-link">Book Now</a>
-      <a href="#" class="nav-link">About us</a>
-      <div class="dropdown">
-        <button class="dropbtn">Sign In</button>
-        <div class="dropdown-content">
-          <a routerLink="/login" [queryParams]="{mode: 'login'}">Login</a>
-          <a routerLink="/login" [queryParams]="{mode: 'register'}">Register</a>
-          <a href="#">Bookings</a>
+      <a routerLink="/all-cars" class="nav-link">Book Now</a>
+      <a href="#about" class="nav-link">About us</a>
+      <div class="dropdown" [class.open]="dropdownOpen">
+        <button class="dropbtn" (click)="toggleDropdown()">Sign In</button>
+        <div class="dropdown-content" [style.display]="dropdownOpen ? 'block' : 'none'">
+          <a routerLink="/login" [queryParams]="{mode: 'login'}" (click)="dropdownOpen = false">Login</a>
+          <a routerLink="/login" [queryParams]="{mode: 'register'}" (click)="dropdownOpen = false">Register</a>
+          <a href="#" (click)="dropdownOpen = false">Bookings</a>
         </div>
       </div>
     </nav>
@@ -24,10 +24,6 @@
   <div class="hero-content">
     <h2>Find Your Dream Car</h2>
     <p>Discover the perfect vehicle that matches your style and budget</p>
-    <div class="hero-search">
-      <input type="text" placeholder="Search by make, model or keyword..." class="search-input" />
-      <button class="search-btn">Search</button>
-    </div>
   </div>
   <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Luxury Car" class="hero-image">
 </section>
@@ -70,12 +66,12 @@
         <h4>{{ car.make }} {{ car.model }}</h4>
         <p class="car-meta">{{ car.year }} &bull; {{ car.category }} &bull; {{ car.transmission }}</p>
         <p class="car-price">${{ car.dailyRate }}/day</p>
-        <button class="car-details-btn">View Details</button>
+        <button class="car-details-btn" (click)="viewDetails(car)">View Details</button>
       </div>
     </div>
   </div>
   <div class="view-all-container">
-    <a class="view-all-btn" routerLink="/all-cars">View All Cars</a>
+    <button class="view-all-btn" routerLink="/all-cars">View All Cars</button>
   </div>
 </section>
 
@@ -104,7 +100,20 @@
     <p>Join thousands of happy customers who found their perfect vehicle with DreamCar</p>
     <div class="cta-buttons">
       <button class="cta-btn cta-browse">Browse Inventory</button>
-      <button class="cta-btn cta-contact">Contact Us</button>
+      <button class="cta-btn cta-contact" onclick="window.location.href='mailto:brianmwasbayo@gmail.com'">Contact Us</button>
+    </div>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="about-section" id="about">
+  <div class="about-container">
+    <div class="about-text">
+      <h3>About DreamCar</h3>
+      <p>DreamCar is your trusted partner in finding the perfect vehicle at the right price. With a wide selection of premium and affordable cars, transparent pricing, and a customer-first approach, we make your car rental and buying experience smooth and enjoyable. Discover why thousands choose DreamCar for their journeys!</p>
+    </div>
+    <div class="about-image">
+      <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=600&q=80" alt="About DreamCar" />
     </div>
   </div>
 </section>
@@ -146,8 +155,98 @@
         <button class="footer-btn">Get Directions</button>
       </address>
     </div>
+    <div class="footer-social">
+      <h5>Follow Us</h5>
+      <div class="social-icons">
+        <a href="https://www.facebook.com" target="_blank" aria-label="Facebook" class="social-icon facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ccc" width="24" height="24"><path d="M22.675 0h-21.35C.6 0 0 .6 0 1.325v21.351C0 23.4.6 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.466.099 2.797.143v3.24l-1.918.001c-1.504 0-1.796.715-1.796 1.763v2.312h3.59l-.467 3.622h-3.123V24h6.116C23.4 24 24 23.4 24 22.675V1.325C24 .6 23.4 0 22.675 0z"/></svg>
+        </a>
+        <a href="https://www.twitter.com" target="_blank" aria-label="Twitter" class="social-icon twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ccc" width="24" height="24"><path d="M24 4.557a9.83 9.83 0 01-2.828.775 4.932 4.932 0 002.165-2.724c-.951.564-2.005.974-3.127 1.195a4.916 4.916 0 00-8.373 4.482A13.94 13.94 0 011.671 3.149a4.916 4.916 0 001.523 6.574 4.9 4.9 0 01-2.228-.616c-.054 2.281 1.581 4.415 3.949 4.89a4.935 4.935 0 01-2.224.084 4.918 4.918 0 004.59 3.417A9.867 9.867 0 010 19.54a13.94 13.94 0 007.548 2.209c9.142 0 14.307-7.721 13.995-14.646A9.936 9.936 0 0024 4.557z"/></svg>
+        </a>
+        <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ccc" width="24" height="24"><path d="M7.75 2h8.5A5.75 5.75 0 0122 7.75v8.5A5.75 5.75 0 0116.25 22h-8.5A5.75 5.75 0 012 16.25v-8.5A5.75 5.75 0 017.75 2zm0 1.5A4.25 4.25 0 003.5 7.75v8.5A4.25 4.25 0 007.75 20.5h8.5a4.25 4.25 0 004.25-4.25v-8.5A4.25 4.25 0 0016.25 3.5h-8.5zm8.75 2.25a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 1.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg>
+        </a>
+        <a href="https://www.xspace.com" target="_blank" aria-label="XSpace" class="social-icon xspace">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ccc" width="24" height="24"><path d="M12 0C5.373 0 0 5.373 0 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-6.627-5.373-12-12-12zm3.536 16.95l-1.414 1.414L12 13.414l-2.122 2.95-1.414-1.414L10.586 12 8.464 9.879l1.414-1.414L12 10.586l2.122-2.121 1.414 1.414L13.414 12l2.122 2.95z"/></svg>
+        </a>
+        <!-- Add more icons as needed -->
+      </div>
+    </div>
   </div>
   <div class="footer-bottom">
     <p>&copy; 2025 DreamCar. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
   </div>
 </footer>
+
+<!-- Car Details Modal -->
+<div *ngIf="showDetailsModal" class="modal-overlay" (click)="closeDetailsModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Car Details</h2>
+      <button class="modal-close" (click)="closeDetailsModal()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedCar">
+      <!-- Car Images -->
+      <div class="car-images-section">
+        <div class="main-image">
+          <img [src]="selectedCar.imageUrls && selectedCar.imageUrls.length ? selectedCar.imageUrls[0] : 'https://placehold.co/400x200'" [alt]="selectedCar.make + ' ' + selectedCar.model">
+        </div>
+        <div class="image-gallery" *ngIf="selectedCar.imageUrls && selectedCar.imageUrls.length > 1">
+          <img *ngFor="let imageUrl of selectedCar.imageUrls.slice(1, 5)" [src]="imageUrl" [alt]="selectedCar.make + ' ' + selectedCar.model" class="gallery-thumbnail">
+        </div>
+      </div>
+      <!-- Car Basic Info -->
+      <div class="car-basic-info">
+        <h3>{{ selectedCar.make }} {{ selectedCar.model }}</h3>
+        <div class="car-badges">
+          <span class="info-badge">{{ selectedCar.year }}</span>
+          <span class="info-badge">{{ selectedCar.category }}</span>
+          <span class="info-badge">{{ selectedCar.transmission }}</span>
+          <span class="info-badge" [class.available]="selectedCar.available" [class.unavailable]="!selectedCar.available">
+            {{ selectedCar.available ? 'Available' : 'Unavailable' }}
+          </span>
+        </div>
+      </div>
+      <!-- Car Specifications -->
+      <div class="car-specifications">
+        <h4>Specifications</h4>
+        <div class="specs-grid">
+          <div class="spec-item"><span class="spec-label">Make:</span><span class="spec-value">{{ selectedCar.make }}</span></div>
+          <div class="spec-item"><span class="spec-label">Model:</span><span class="spec-value">{{ selectedCar.model }}</span></div>
+          <div class="spec-item"><span class="spec-label">Year:</span><span class="spec-value">{{ selectedCar.year }}</span></div>
+          <div class="spec-item"><span class="spec-label">License Plate:</span><span class="spec-value">{{ selectedCar.licensePlate }}</span></div>
+          <div class="spec-item"><span class="spec-label">Category:</span><span class="spec-value">{{ selectedCar.category }}</span></div>
+          <div class="spec-item"><span class="spec-label">Transmission:</span><span class="spec-value">{{ selectedCar.transmission }}</span></div>
+          <div class="spec-item"><span class="spec-label">Fuel Type:</span><span class="spec-value">{{ selectedCar.fuelType }}</span></div>
+          <div class="spec-item"><span class="spec-label">Seats:</span><span class="spec-value">{{ selectedCar.seats }} persons</span></div>
+          <div class="spec-item"><span class="spec-label">Doors:</span><span class="spec-value">{{ selectedCar.doors }} doors</span></div>
+          <div class="spec-item" *ngIf="selectedCar.location?.name">
+            <span class="spec-label">Location:</span>
+            <span class="spec-value">{{ selectedCar.location.name }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- Pricing -->
+      <div class="car-pricing">
+        <h4>Pricing</h4>
+        <div class="pricing-info">
+          <div class="price-item"><span class="price-label">Daily Rate:</span><span class="price-value">${{ selectedCar.dailyRate }}/day</span></div>
+          <div class="price-item" *ngIf="selectedCar.hourlyRate"><span class="price-label">Hourly Rate:</span><span class="price-value">${{ selectedCar.hourlyRate }}/hour</span></div>
+        </div>
+      </div>
+      <!-- Features -->
+      <div class="car-features-section" *ngIf="selectedCar.features && selectedCar.features.length > 0">
+        <h4>Features</h4>
+        <div class="features-list">
+          <span class="feature-tag" *ngFor="let feature of selectedCar.features">{{ feature }}</span>
+        </div>
+      </div>
+      <!-- Action Buttons -->
+      <div class="modal-actions">
+        <button class="book-now-btn" [disabled]="!selectedCar.available">{{ selectedCar.available ? 'Book Now' : 'Currently Unavailable' }}</button>
+        <button class="close-btn" (click)="closeDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

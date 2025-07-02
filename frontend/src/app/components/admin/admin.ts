@@ -9,6 +9,8 @@ import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe } from '@angular/comm
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin';
 import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-admin',
@@ -23,7 +25,8 @@ import { AuthService } from '../../services/auth.service';
     DecimalPipe
   ]
 })
-export class Admin implements OnInit {
+export class AdminComponent implements OnInit {
+  dashboardSection = '';
   cars: Car[] = [];
   filteredCars: Car[] = [];
   locations: Location[] = [];
@@ -41,17 +44,14 @@ export class Admin implements OnInit {
   public totalRevenue = 0;
   showAddCarModal = false;
   toastMessage = '';
-  dashboardSection: 'cars' | 'bookings' | 'reviews' = 'cars';
-  pendingDeleteCar: Car | null = null;
-  showDeleteConfirm: boolean = false;
-  pendingAgents: any[] = [];
+  showDeleteConfirm = false;
+  carToDelete: Car | null = null;
   approvingAgentId: string | null = null;
-  pendingAgentsError: string = '';
-  showProfileModal: boolean = false;
-  profileForm = { name: '', email: '', password: '' };
-  profileLoading: boolean = false;
-  profileError: string = '';
-  profileSuccess: string = '';
+  pendingAgentsError = '';
+  pendingAgents: any[] = [];
+  showCreateAgentModal = false;
+  agentForm: FormGroup;
+  creatingAgent = false;
 
   carCategories = [
     'ECONOMY', 'COMPACT', 'MID_SIZE', 'FULL_SIZE', 'SUV', 'LUXURY', 'VAN', 'SPORTS'
@@ -66,7 +66,8 @@ export class Admin implements OnInit {
     private bookingService: BookingService,
     private fb: FormBuilder,
     private adminService: AdminService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {
     this.carForm = this.fb.group({
       id: [''],
@@ -84,7 +85,8 @@ export class Admin implements OnInit {
       available: [true],
       features: this.fb.array([]),
       locationId: [''],
-      imageUrls: [[]]
+      imageUrls: [[]],
+      images: [null]
     });
     this.filterForm = this.fb.group({
       category: [''],
@@ -97,6 +99,13 @@ export class Admin implements OnInit {
       minDailyRate: [''],
       maxDailyRate: [''],
       search: ['']
+    });
+
+    this.agentForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      phone: ['', Validators.required]
     });
   }
 
@@ -162,7 +171,7 @@ export class Admin implements OnInit {
         this.showToast(err?.error?.message || 'Failed to load reviews.');
       }
     });
-    this.bookingService.getUserBookings('all').subscribe({
+    this.bookingService.getAllBookings().subscribe({
       next: (bookings) => {
         this.bookings = bookings;
         this.totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
@@ -181,7 +190,7 @@ export class Admin implements OnInit {
       },
       error: (err) => {
         this.pendingAgentsError = err?.error?.message || 'Failed to load pending agents.';
-        this.showToast(this.pendingAgentsError);
+        this.pendingAgents = [];
       }
     });
   }
@@ -189,15 +198,52 @@ export class Admin implements OnInit {
   approveAgent(agentId: string) {
     this.approvingAgentId = agentId;
     this.adminService.approveAgent(agentId).subscribe({
-      next: () => {
-        this.pendingAgents = this.pendingAgents.filter(a => a.id !== agentId);
-        this.approvingAgentId = null;
+      next: (res) => {
+        const agent = this.pendingAgents.find(a => a.id === agentId);
+        const agentName = agent?.name || agent?.email || 'Agent';
+        this.showToast(`✅ ${agentName} has been approved successfully! They can now log in and access the agent dashboard.`);
+        this.loadPendingAgents();
       },
       error: (err) => {
-        this.pendingAgentsError = err?.error?.message || 'Failed to approve agent.';
+        this.showToast(`❌ Failed to approve agent: ${err?.error?.message || 'Unknown error'}`);
+      },
+      complete: () => {
         this.approvingAgentId = null;
       }
     });
+  }
+
+  startCreateAgent() {
+    this.agentForm.reset();
+    this.showCreateAgentModal = true;
+  }
+
+  submitAgent() {
+    if (this.agentForm.invalid) {
+      return;
+    }
+
+    this.creatingAgent = true;
+    const agentData = this.agentForm.value;
+
+    this.adminService.createAgent(agentData).subscribe({
+      next: (res) => {
+        this.showToast(`✅ Agent ${agentData.name} created successfully! They will need approval before they can log in.`);
+        this.showCreateAgentModal = false;
+        this.loadPendingAgents();
+      },
+      error: (err) => {
+        this.showToast(`❌ Failed to create agent: ${err?.error?.message || 'Unknown error'}`);
+      },
+      complete: () => {
+        this.creatingAgent = false;
+      }
+    });
+  }
+
+  cancelCreateAgent() {
+    this.showCreateAgentModal = false;
+    this.agentForm.reset();
   }
 
   applyFilters() {
@@ -208,86 +254,132 @@ export class Admin implements OnInit {
   }
 
   searchCars() {
-    const term = this.filterForm.value.search;
-    if (!term) return this.applyFilters();
-    this.carService.filterCars({ ...this.filterForm.value, q: term }).subscribe(cars => {
-      this.filteredCars = cars;
-    });
+    const searchTerm = this.filterForm.get('search')?.value?.toLowerCase();
+    if (!searchTerm) {
+      this.filteredCars = this.cars;
+      return;
+    }
+    this.filteredCars = this.cars.filter(car => 
+      car.make.toLowerCase().includes(searchTerm) ||
+      car.model.toLowerCase().includes(searchTerm) ||
+      car.licensePlate.toLowerCase().includes(searchTerm)
+    );
   }
 
   resetFilters() {
     this.filterForm.reset();
-    this.loadAll();
+    this.filteredCars = this.cars;
   }
 
   startAddCar() {
     this.isEditMode = false;
-    this.selectedCar = null;
-    this.carForm.reset({ available: true, features: [] });
-    this.featuresArray.clear();
+    this.carForm.reset();
+    this.carForm.patchValue({
+      available: true,
+      features: [],
+      imageUrls: []
+    });
     this.imageFiles = [];
-    this.showDetails = false;
     this.showAddCarModal = true;
   }
 
   startEditCar(car: Car) {
     this.isEditMode = true;
-    this.selectedCar = car;
-    this.carForm.patchValue({ ...car });
-    this.featuresArray.clear();
-    (car.features || []).forEach(f => this.featuresArray.push(this.fb.control(f)));
-    this.imageFiles = [];
-    this.showDetails = false;
+    this.carForm.patchValue({
+      id: car.id,
+      make: car.make,
+      model: car.model,
+      year: car.year,
+      licensePlate: car.licensePlate,
+      category: car.category,
+      transmission: car.transmission,
+      fuelType: car.fuelType,
+      seats: car.seats,
+      doors: car.doors,
+      dailyRate: car.dailyRate,
+      hourlyRate: car.hourlyRate,
+      available: car.available,
+      locationId: car.locationId,
+      imageUrls: car.imageUrls || []
+    });
+
+    // Set features
+    const featuresArray = this.carForm.get('features') as FormArray;
+    featuresArray.clear();
+    if (car.features && car.features.length > 0) {
+      car.features.forEach(feature => {
+        featuresArray.push(this.fb.control(feature));
+      });
+    }
+
+    this.showAddCarModal = true;
   }
 
   submitCar() {
-    if (this.carForm.invalid) return;
-    const formValue = this.carForm.value;
-    const formData = new FormData();
-    Object.entries(formValue).forEach(([key, value]) => {
-      if (key === 'features') {
-        formData.append('features', JSON.stringify(value));
-      } else if (key === 'imageUrls') {
-        // skip, handled by backend
-      } else if (typeof value === 'string' || value instanceof Blob) {
-        formData.append(key, value);
-      } else if (typeof value === 'number' || typeof value === 'boolean') {
-        formData.append(key, value.toString());
-      }
-    });
-    this.imageFiles.forEach(file => formData.append('images', file));
-    if (this.isEditMode && formValue.id) {
-      this.carService.updateCar(formValue.id, formValue).subscribe({
-        next: (res) => {
-          if (res && res.ok) {
-            this.loadAll();
-            this.showAddCarModal = false;
-            this.showToast('Car updated successfully!');
-            this.carForm.reset({ available: true, features: [] });
-            this.featuresArray.clear();
-            this.imageFiles = [];
+    if (this.carForm.invalid) {
+      return;
+    }
+
+    const carData = this.carForm.value;
+    const featuresArray = this.carForm.get('features') as FormArray;
+    carData.features = featuresArray.value.filter((f: string) => f.trim() !== '');
+
+    // Remove fields not needed for creation
+    delete carData.id;
+    delete carData.images;
+    if (!carData.hourlyRate) delete carData.hourlyRate;
+    if (!carData.locationId) carData.locationId = undefined;
+    if (!carData.imageUrls || carData.imageUrls.length === 0) delete carData.imageUrls;
+
+    // Handle image upload with FormData if images are selected
+    if (!this.isEditMode && this.imageFiles && this.imageFiles.length > 0) {
+      const formData = new FormData();
+      Object.entries(carData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+          } else if (typeof value === 'object') {
+            formData.append(key, JSON.stringify(value));
           } else {
-            this.showToast(res?.message || 'Failed to update car.');
+            formData.append(key, String(value));
           }
+        }
+      });
+      this.imageFiles.forEach((file) => {
+        formData.append('images', file);
+      });
+      this.carService.createCar(formData).subscribe({
+        next: (car) => {
+          this.showToast('Car added successfully!');
+          this.loadAll();
+          this.showAddCarModal = false;
         },
         error: (err) => {
-          const msg = err?.error?.message || 'Failed to update car.';
-          this.showToast(msg);
+          this.showToast(err?.error?.message || 'Failed to add car.');
+        }
+      });
+    } else if (!this.isEditMode) {
+      // No images, send plain object
+      this.carService.createCar(carData).subscribe({
+        next: (car) => {
+          this.showToast('Car added successfully!');
+          this.loadAll();
+          this.showAddCarModal = false;
+        },
+        error: (err) => {
+          this.showToast(err?.error?.message || 'Failed to add car.');
         }
       });
     } else {
-      this.carService.createCar(formData).subscribe({
-        next: () => {
+      // Edit mode
+      this.carService.updateCar(this.carForm.value.id, carData).subscribe({
+        next: (car) => {
+          this.showToast('Car updated successfully!');
           this.loadAll();
           this.showAddCarModal = false;
-          this.showToast('Car added successfully!');
-          this.carForm.reset({ available: true, features: [] });
-          this.featuresArray.clear();
-          this.imageFiles = [];
         },
         error: (err) => {
-          const msg = err?.error?.message || 'Failed to add car.';
-          this.showToast(msg);
+          this.showToast(err?.error?.message || 'Failed to update car.');
         }
       });
     }
@@ -295,41 +387,35 @@ export class Admin implements OnInit {
 
   cancelAddCar() {
     this.showAddCarModal = false;
-    this.carForm.reset({ available: true, features: [] });
-    this.featuresArray.clear();
+    this.carForm.reset();
     this.imageFiles = [];
   }
 
   deleteCar(car: Car) {
-    this.pendingDeleteCar = car;
-    this.showToast('Are you sure you want to delete this car?', true);
+    this.carToDelete = car;
+    this.showToast(`Are you sure you want to delete ${car.make} ${car.model}?`, true);
   }
 
   confirmDelete() {
-    if (this.pendingDeleteCar) {
-      this.carService.deleteCar(this.pendingDeleteCar.id).subscribe({
-        next: (res) => {
-          if (res && res.ok) {
-            this.loadAll();
-            this.showToast('Car deleted successfully!');
-          } else {
-            this.showToast(res?.message || 'Failed to delete car.');
-          }
-          this.pendingDeleteCar = null;
-          this.showDeleteConfirm = false;
-        },
-        error: (err) => {
-          const msg = err?.error?.message || 'Failed to delete car. It may have active bookings or you lack permission.';
-          this.showToast(msg);
-          this.pendingDeleteCar = null;
-          this.showDeleteConfirm = false;
-        }
-      });
-    }
+    if (!this.carToDelete) return;
+
+    this.carService.deleteCar(this.carToDelete.id).subscribe({
+      next: () => {
+        this.showToast('Car deleted successfully!');
+        this.loadAll();
+        this.carToDelete = null;
+        this.showDeleteConfirm = false;
+      },
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Failed to delete car.');
+        this.carToDelete = null;
+        this.showDeleteConfirm = false;
+      }
+    });
   }
 
   cancelDelete() {
-    this.pendingDeleteCar = null;
+    this.carToDelete = null;
     this.showDeleteConfirm = false;
     this.toastMessage = '';
   }
@@ -337,69 +423,69 @@ export class Admin implements OnInit {
   showToast(message: string, confirmDelete: boolean = false) {
     this.toastMessage = message;
     this.showDeleteConfirm = confirmDelete;
-    if (!confirmDelete) {
-      setTimeout(() => {
-        this.toastMessage = '';
-      }, 2000);
-    }
+    setTimeout(() => {
+      this.toastMessage = '';
+      this.showDeleteConfirm = false;
+    }, 5000);
   }
 
   toggleCarAvailability(car: Car) {
-    this.carService.toggleAvailability(car.id).subscribe(updated => {
-      car.available = updated.available;
+    this.carService.toggleAvailability(car.id).subscribe({
+      next: () => {
+        this.showToast(`Car ${car.available ? 'unavailable' : 'available'} successfully!`);
+        this.loadAll();
+      },
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Failed to toggle car availability.');
+      }
     });
   }
 
   onImageChange(event: any) {
-    if (event.target.files) {
-      this.imageFiles = Array.from(event.target.files);
-    }
+    this.imageFiles = Array.from(event.target.files);
   }
 
   uploadImages(car: Car) {
     if (this.imageFiles.length === 0) return;
-    this.carService.uploadImages(car.id, this.imageFiles).subscribe(updated => {
-      car.imageUrls = updated.imageUrls;
-      this.imageFiles = [];
+
+    this.carService.uploadImages(car.id, this.imageFiles).subscribe({
+      next: () => {
+        this.showToast('Images uploaded successfully!');
+        this.loadAll();
+      },
+      error: (err: any) => {
+        this.showToast(err?.error?.message || 'Failed to upload images.');
+      }
     });
   }
 
   addFeature() {
-    this.featuresArray.push(this.fb.control(''));
+    const featuresArray = this.carForm.get('features') as FormArray;
+    featuresArray.push(this.fb.control(''));
   }
 
   removeFeature(i: number) {
-    this.featuresArray.removeAt(i);
+    const featuresArray = this.carForm.get('features') as FormArray;
+    featuresArray.removeAt(i);
   }
 
-  get featuresArray() {
-    return this.carForm.get('features') as FormArray;
-  }
-
-  get featuresControls() {
-    return this.featuresArray.controls as FormControl[];
+  get featuresArray(): FormControl[] {
+    return (this.carForm.get('features') as FormArray).controls as FormControl[];
   }
 
   showCarDetails(car: Car) {
     this.selectedCar = car;
     this.showDetails = true;
-    this.reviewService.getRatings().subscribe(reviews => {
-      this.carReviews = reviews.filter(r => r.carId === car.id);
-    });
-    // Optionally, fetch bookings for this car if backend supports it
-    // this.bookingService.getBookingsForCar(car.id).subscribe(bookings => this.carBookings = bookings);
   }
 
   closeDetails() {
     this.showDetails = false;
     this.selectedCar = null;
-    this.carReviews = [];
-    this.carBookings = [];
   }
 
   public logout() {
     localStorage.clear();
-    window.location.href = '/';
+    window.location.href = '/login';
   }
 
   setSection(section: 'cars' | 'bookings' | 'reviews') {
@@ -408,92 +494,36 @@ export class Admin implements OnInit {
 
   editCar(car: Car) {
     this.startEditCar(car);
-    this.showAddCarModal = true;
   }
 
   editReview(review: Review) {
-    // Disabled until implemented
-    this.showToast('Edit review not implemented');
+    // Implementation for editing review
   }
 
   deleteReview(review: Review) {
-    // Disabled until implemented
-    this.showToast('Delete review not implemented');
+    // Implementation for deleting review
   }
 
   acceptBooking(booking: Booking) {
     this.bookingService.confirmBooking(booking.id).subscribe({
-      next: (res) => {
-        if (res && res.ok) {
-          this.showToast('Booking accepted!');
-          this.loadAll();
-        } else {
-          this.showToast(res?.message || 'Failed to accept booking.');
-        }
+      next: () => {
+        this.showToast('Booking accepted successfully!');
+        this.loadAll();
       },
-      error: (err) => {
-        const msg = err?.error?.message || 'Failed to accept booking.';
-        this.showToast(msg);
+      error: (err: any) => {
+        this.showToast(err?.error?.message || 'Failed to accept booking.');
       }
     });
   }
 
   rejectBooking(booking: Booking) {
     this.bookingService.cancelBooking(booking.id).subscribe({
-      next: (res) => {
-        if (res && res.ok) {
-          this.showToast('Booking rejected!');
-          this.loadAll();
-        } else {
-          this.showToast(res?.message || 'Failed to reject booking.');
-        }
+      next: () => {
+        this.showToast('Booking rejected successfully!');
+        this.loadAll();
       },
-      error: (err) => {
-        const msg = err?.error?.message || 'Failed to reject booking.';
-        this.showToast(msg);
-      }
-    });
-  }
-
-  openProfileModal() {
-    const user = localStorage.getItem('user');
-    if (user) {
-      const parsed = JSON.parse(user);
-      this.profileForm = { name: parsed.name || '', email: parsed.email || '', password: '' };
-    }
-    this.profileError = '';
-    this.profileSuccess = '';
-    this.showProfileModal = true;
-  }
-
-  closeProfileModal() {
-    this.showProfileModal = false;
-    this.profileError = '';
-    this.profileSuccess = '';
-    this.profileForm.password = '';
-  }
-
-  submitProfileUpdate() {
-    this.profileLoading = true;
-    this.profileError = '';
-    this.profileSuccess = '';
-    const updateData: any = {
-      name: this.profileForm.name,
-      email: this.profileForm.email
-    };
-    if (this.profileForm.password) {
-      updateData.password = this.profileForm.password;
-    }
-    this.authService.updateProfile(updateData).subscribe({
-      next: (updated) => {
-        this.profileLoading = false;
-        this.profileSuccess = 'Profile updated successfully!';
-        localStorage.setItem('user', JSON.stringify(updated));
-        setTimeout(() => this.closeProfileModal(), 1500);
-      },
-      error: (err) => {
-        this.profileLoading = false;
-        this.profileError = err?.error?.message || 'Failed to update profile.';
+      error: (err: any) => {
+        this.showToast(err?.error?.message || 'Failed to reject booking.');
       }
     });
   }

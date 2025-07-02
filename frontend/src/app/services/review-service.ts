@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 export interface Review {
   id: string;
@@ -34,7 +35,11 @@ export class ReviewService {
 
   getRatings(): Observable<Review[]> {
     return this.http.get<{ data: Review[] }>(this.apiUrl).pipe(
-      map(response => response.data)
+      map(response => response.data || []),
+      catchError(error => {
+        console.error('Error fetching ratings:', error);
+        return of([]);
+      })
     );
   }
 
@@ -44,7 +49,11 @@ export class ReviewService {
 
   getReviewsByCar(carId: string): Observable<Review[]> {
     return this.http.get<{ data: Review[] }>(`${this.apiUrl}/car/${carId}`).pipe(
-      map(response => response.data)
+      map(response => response.data || []),
+      catchError(error => {
+        console.error('Error fetching car reviews:', error);
+        return of([]);
+      })
     );
   }
 } 

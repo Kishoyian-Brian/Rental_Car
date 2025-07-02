@@ -325,11 +325,21 @@ export class User implements OnInit, OnDestroy {
   }
 
   loadCarReviews(carId: string) {
-    this.reviewService.getReviewsByCar(carId).subscribe(reviews => {
-      this.carReviews = reviews;
-      const user = localStorage.getItem('user');
-      const userId = user ? JSON.parse(user).id : null;
-      this.hasReviewed = !!reviews.find(r => r.userId === userId);
+    console.log('Loading reviews for car:', carId);
+    this.reviewService.getReviewsByCar(carId).subscribe({
+      next: (reviews) => {
+        console.log('Reviews loaded:', reviews);
+        this.carReviews = reviews;
+        const user = localStorage.getItem('user');
+        const userId = user ? JSON.parse(user).id : null;
+        this.hasReviewed = !!reviews.find(r => r.userId === userId);
+        console.log('Has reviewed:', this.hasReviewed);
+      },
+      error: (err) => {
+        console.error('Error loading reviews:', err);
+        this.carReviews = [];
+        this.hasReviewed = false;
+      }
     });
   }
 
@@ -348,10 +358,16 @@ export class User implements OnInit, OnDestroy {
         this.reviewSubmitting = false;
         this.reviewForm = { rating: 5, comment: '' };
         this.loadCarReviews(this.selectedCar.id);
+        setTimeout(() => {
+          this.reviewSuccess = false;
+        }, 3000);
       },
       error: (err) => {
         this.reviewError = err?.error?.message || 'Failed to submit review.';
         this.reviewSubmitting = false;
+        setTimeout(() => {
+          this.reviewError = '';
+        }, 5000);
       }
     });
   }

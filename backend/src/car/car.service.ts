@@ -24,8 +24,14 @@ export class CarService {
         return this.apiResponse.badRequest('Car with this license plate already exists');
       }
 
+      // Remove id if present and null/undefined
+      const data: any = { ...createCarDto };
+      if (data.id === null || data.id === undefined) {
+        delete data.id;
+      }
+
       const car = await this.prisma.car.create({
-        data: createCarDto,
+        data,
         include: {
           location: {
             select: {
@@ -90,9 +96,15 @@ export class CarService {
       const allImageUrls = [...(parsedData.imageUrls || []), ...imageUrls];
       console.log('Final imageUrls to save:', allImageUrls);
 
+      // Remove id if present and null/undefined
+      const data: any = { ...parsedData };
+      if (data.id === null || data.id === undefined) {
+        delete data.id;
+      }
+
       const car = await this.prisma.car.create({
         data: {
-          ...parsedData,
+          ...data,
           imageUrls: allImageUrls,
         },
         include: {

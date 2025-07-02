@@ -4,7 +4,7 @@ import { Agent } from './components/agent/agent';
 import { User } from './components/user/user';
 import { Login } from './components/login/login';
 import { Bookings } from './components/bookings/bookings';
-import { Admin } from './components/admin/admin';
+import { AdminComponent } from './components/admin/admin';
 import { AllCars } from './components/all-cars/all-cars';
 import { Booknow } from './components/booknow/booknow';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password';
@@ -32,7 +32,7 @@ export const routes: Routes = [
     },
     {
         path: 'admin-dashboard',
-        component: Admin
+        component: AdminComponent
     },
     {
         path: 'all-cars',

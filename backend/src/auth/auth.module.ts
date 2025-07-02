@@ -26,7 +26,4 @@ import { NotificationModule } from '../notification/notification.module';
   exports: [AuthService],
 })
 export class AuthModule {
-  constructor(private configService: ConfigService) {
-    console.log('AuthModule - JWT_SECRET:', this.configService.get<string>('JWT_SECRET'));
-  }
 } 

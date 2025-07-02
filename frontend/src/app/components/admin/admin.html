@@ -52,34 +52,49 @@
 
   <!-- Pending Agents Section -->
   <section class="pending-agents-section" style="margin-bottom:2rem;">
-    <h3>Pending Agents</h3>
-    <div *ngIf="pendingAgentsError" class="pending-agents-error">{{ pendingAgentsError }}</div>
-    <div *ngIf="pendingAgents.length === 0 && !pendingAgentsError" class="no-pending-agents">No pending agents.</div>
-    <table class="modern-table" *ngIf="pendingAgents.length > 0">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Created</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let agent of pendingAgents">
-          <td>{{ agent.name || '-' }}</td>
-          <td>{{ agent.email }}</td>
-          <td>{{ agent.createdAt | date:'short' }}</td>
-          <td>{{ agent.status }}</td>
-          <td>
-            <button (click)="approveAgent(agent.id)" [disabled]="approvingAgentId === agent.id">
-              <span *ngIf="approvingAgentId === agent.id" class="spinner"></span>
-              Approve
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="section-header">
+      <h3>Pending Agents <span *ngIf="pendingAgents.length > 0" class="badge">{{ pendingAgents.length }}</span></h3>
+      <div class="section-actions">
+        <button class="create-agent-btn" (click)="startCreateAgent()">
+          <span class="plus-icon">+</span> Create Agent
+        </button>
+        <button class="refresh-btn" (click)="loadPendingAgents()" [disabled]="approvingAgentId">
+          <span class="refresh-icon">↻</span> Refresh
+        </button>
+      </div>
+    </div>
+    
+    <div *ngIf="pendingAgentsError" class="pending-agents-error">
+      <span class="error-icon">⚠</span> {{ pendingAgentsError }}
+    </div>
+    
+    <div *ngIf="pendingAgents.length === 0 && !pendingAgentsError" class="no-pending-agents">
+      <span class="check-icon">✓</span> No pending agents to approve.
+    </div>
+    
+    <div *ngIf="pendingAgents.length > 0" class="pending-agents-grid">
+      <div class="agent-card" *ngFor="let agent of pendingAgents">
+        <div class="agent-info">
+          <div class="agent-avatar">
+            <span>{{ (agent.name || agent.email).charAt(0).toUpperCase() }}</span>
+          </div>
+          <div class="agent-details">
+            <h4>{{ agent.name || 'Unnamed Agent' }}</h4>
+            <p class="agent-email">{{ agent.email }}</p>
+            <p class="agent-date">Joined: {{ agent.createdAt | date:'MMM dd, yyyy' }}</p>
+          </div>
+        </div>
+        <div class="agent-actions">
+          <button 
+            class="approve-btn" 
+            (click)="approveAgent(agent.id)" 
+            [disabled]="approvingAgentId === agent.id">
+            <span *ngIf="approvingAgentId === agent.id" class="spinner"></span>
+            <span *ngIf="approvingAgentId !== agent.id">✓ Approve</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Cards -->
@@ -305,23 +320,14 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Daily Rate</label>
-            <input type="number" formControlName="dailyRate" required autocomplete="off" />
-            <div *ngIf="carForm.get('dailyRate')?.invalid && carForm.get('dailyRate')?.touched" class="field-error">
-              <span *ngIf="carForm.get('dailyRate')?.errors?.['required']">Daily Rate is required.</span>
-              <span *ngIf="carForm.get('dailyRate')?.errors?.['min']">Must be positive.</span>
-            </div>
+            <label>Daily Rate ($)</label>
+            <input type="number" step="0.01" formControlName="dailyRate" required autocomplete="off" />
+            <div *ngIf="carForm.get('dailyRate')?.invalid && carForm.get('dailyRate')?.touched" class="field-error">Daily Rate is required and must be positive.</div>
           </div>
           <div class="form-group">
-            <label>Hourly Rate</label>
-            <input type="number" formControlName="hourlyRate" autocomplete="off" />
+            <label>Hourly Rate ($)</label>
+            <input type="number" step="0.01" formControlName="hourlyRate" autocomplete="off" />
           </div>
-          <div class="form-group">
-            <label>Available</label>
-            <input type="checkbox" formControlName="available" autocomplete="off" />
-          </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label>Location</label>
             <select formControlName="locationId" autocomplete="off">
@@ -329,15 +335,15 @@
               <option *ngFor="let loc of locations" [value]="loc.id">{{ loc.name }}</option>
             </select>
           </div>
-          <div class="form-group" style="flex:2;">
-            <label>Features</label>
-            <div class="features-list">
-              <div *ngFor="let feature of featuresControls; let i = index">
-                <input [formControl]="feature" placeholder="Feature" autocomplete="off" />
-                <button type="button" (click)="removeFeature(i)">Remove</button>
-              </div>
-              <button type="button" (click)="addFeature()">Add Feature</button>
+        </div>
+        <div class="form-group">
+          <label>Features</label>
+          <div class="features-list">
+            <div *ngFor="let feature of featuresArray; let i = index">
+              <input [formControl]="feature" placeholder="Feature" autocomplete="off" />
+              <button type="button" (click)="removeFeature(i)">Remove</button>
             </div>
+            <button type="button" (click)="addFeature()">Add Feature</button>
           </div>
         </div>
         <div class="form-row">
@@ -346,42 +352,56 @@
             <input type="file" (change)="onImageChange($event)" multiple autocomplete="off" />
           </div>
         </div>
-        <div class="modal-actions">
+        <div class="form-actions">
           <button type="button" (click)="cancelAddCar()">Cancel</button>
-          <button type="submit" [disabled]="carForm.invalid">Save</button>
+          <button type="submit" [disabled]="carForm.invalid">Add Car</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- The rest of the dashboard (tables, modals) will be updated next -->
-  <ng-content></ng-content>
-
-  <div class="admin-profile-actions" style="margin-bottom:1.5rem;">
-    <button (click)="openProfileModal()">Update Profile</button>
-  </div>
-
-  <!-- Profile Update Modal -->
-  <div class="modal-overlay" *ngIf="showProfileModal">
-    <div class="modal-card" (click)="$event.stopPropagation()" style="max-width:400px;">
-      <button class="modal-close" (click)="closeProfileModal()">&times;</button>
-      <h3>Update Profile</h3>
-      <form (ngSubmit)="submitProfileUpdate()" class="profile-update-form">
-        <label>Name:
-          <input type="text" [(ngModel)]="profileForm.name" name="profileName" required autocomplete="name" />
-        </label>
-        <label>Email:
-          <input type="email" [(ngModel)]="profileForm.email" name="profileEmail" required autocomplete="email" />
-        </label>
-        <label>Password:
-          <input type="password" [(ngModel)]="profileForm.password" name="profilePassword" placeholder="New password (leave blank to keep)" autocomplete="new-password" />
-        </label>
-        <div *ngIf="profileError" class="modal-error-message">{{ profileError }}</div>
-        <div *ngIf="profileSuccess" class="modal-success-message">{{ profileSuccess }}</div>
-        <button type="submit" [disabled]="profileLoading">
-          <span *ngIf="profileLoading" class="spinner"></span>
-          Update Profile
-        </button>
+  <!-- Create Agent Modal -->
+  <div class="add-car-modal" *ngIf="showCreateAgentModal">
+    <div class="modal-content">
+      <h2>Create New Agent</h2>
+      <form [formGroup]="agentForm" (ngSubmit)="submitAgent()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input formControlName="name" required autocomplete="off" placeholder="Enter agent's full name" />
+            <div *ngIf="agentForm.get('name')?.invalid && agentForm.get('name')?.touched" class="field-error">Name is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" formControlName="email" required autocomplete="off" placeholder="Enter agent's email" />
+            <div *ngIf="agentForm.get('email')?.invalid && agentForm.get('email')?.touched" class="field-error">
+              <span *ngIf="agentForm.get('email')?.errors?.['required']">Email is required.</span>
+              <span *ngIf="agentForm.get('email')?.errors?.['email']">Please enter a valid email.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" formControlName="password" required autocomplete="off" placeholder="Enter password (min 6 characters)" />
+            <div *ngIf="agentForm.get('password')?.invalid && agentForm.get('password')?.touched" class="field-error">
+              <span *ngIf="agentForm.get('password')?.errors?.['required']">Password is required.</span>
+              <span *ngIf="agentForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input formControlName="phone" required autocomplete="off" placeholder="Enter phone number" />
+            <div *ngIf="agentForm.get('phone')?.invalid && agentForm.get('phone')?.touched" class="field-error">Phone number is required.</div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="cancelCreateAgent()">Cancel</button>
+          <button type="submit" [disabled]="agentForm.invalid || creatingAgent">
+            <span *ngIf="creatingAgent" class="spinner"></span>
+            <span *ngIf="!creatingAgent">Create Agent</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>

@@ -1,15 +1,63 @@
-<div class="bookings-container">
-  <h2 class="bookings-title">My Bookings</h2>
-  <div *ngIf="bookings.length === 0" class="no-bookings">No bookings found.</div>
-  <div class="bookings-list">
-    <div *ngFor="let booking of bookings" class="booking-card">
-      <img [src]="booking.car.imageUrls && booking.car.imageUrls.length ? booking.car.imageUrls[0] : 'https://placehold.co/300x150?text=No+Image'" class="booking-img" [alt]="booking.car.make + ' ' + booking.car.model" />
-      <div class="booking-info">
-        <h3 class="booking-car">{{ booking.car.make }} {{ booking.car.model }}</h3>
-        <div class="booking-dates">{{ booking.startDate | date:'mediumDate' }} - {{ booking.endDate | date:'mediumDate' }}</div>
-        <div class="booking-price">Total: ${{ booking.totalPrice }}</div>
-        <div class="booking-status">Status: <span [ngClass]="'status-' + booking.status.toLowerCase()">{{ booking.status }}</span></div>
+<header class="header">
+  <div class="header-container">
+    <div class="header-logo">
+      <span class="logo-text">DreamCar</span>
+    </div>
+    <nav class="header-nav">
+      <a routerLink="/app-user" class="nav-link">Home</a>
+      <button class="signout-btn" (click)="onSignOut()">Sign Out</button>
+    </nav>
+  </div>
+</header>
+<div class="bookings-main-layout">
+  <aside class="bookings-sidebar">
+    <h3>Filter Bookings</h3>
+    <ul class="filter-list">
+      <li [class.active]="selectedStatus === ''" (click)="filterStatus('')">All</li>
+      <li [class.active]="selectedStatus === 'ACCEPTED'" (click)="filterStatus('ACCEPTED')">Accepted</li>
+      <li [class.active]="selectedStatus === 'PENDING'" (click)="filterStatus('PENDING')">Pending</li>
+      <li [class.active]="selectedStatus === 'REJECTED'" (click)="filterStatus('REJECTED')">Rejected</li>
+    </ul>
+  </aside>
+  <div class="bookings-container">
+    <h2 class="bookings-title">My Bookings</h2>
+    <div *ngIf="filteredBookings.length === 0" class="no-bookings-modern">
+      <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No bookings" class="no-bookings-img" />
+      <div>No bookings found.<br><span class="no-bookings-tip">Ready for your next adventure?</span></div>
+    </div>
+    <div class="bookings-list">
+      <div *ngFor="let booking of filteredBookings" class="booking-card-modern">
+        <div class="booking-card-header">
+          <span class="car-badge">{{ booking.car.make }}</span>
+          <span class="car-year">{{ booking.car.year }}</span>
+        </div>
+        <img [src]="booking.car.imageUrls && booking.car.imageUrls.length ? booking.car.imageUrls[0] : 'https://placehold.co/300x150?text=No+Image'" class="booking-img-modern" [alt]="booking.car.make + ' ' + booking.car.model" />
+        <div class="booking-info-modern">
+          <h3 class="booking-car-modern">{{ booking.car.make }} {{ booking.car.model }}</h3>
+          <div *ngIf="booking.car.location?.name" class="booking-location">
+            <span class="material-icons">location_on</span> {{ booking.car.location?.name }}
+          </div>
+          <div class="booking-detail-row">
+            <span class="material-icons">event</span>
+            <span>{{ booking.startDate | date:'mediumDate' }} - {{ booking.endDate | date:'mediumDate' }}</span>
+          </div>
+          <div class="booking-detail-row">
+            <span class="material-icons">attach_money</span>
+            <span>Total: ${{ booking.totalPrice }}</span>
+          </div>
+          <div class="booking-detail-row">
+            <span class="material-icons">info</span>
+            <span class="status-pill status-{{ booking.status.toLowerCase() }}">{{ booking.status }}</span>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="message-box">
+      <h4>Contact Agent/Admin</h4>
+      <textarea [(ngModel)]="messageText" placeholder="Write your message..." class="message-input"></textarea>
+      <button class="send-message-btn" (click)="sendMessage()">Send Message</button>
+      <div *ngIf="messageSuccess" class="message-success">Message sent!</div>
+      <div *ngIf="messageError" class="message-error">{{ messageError }}</div>
     </div>
   </div>
 </div>

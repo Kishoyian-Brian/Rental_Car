@@ -1,10 +1,10 @@
 /* Header */
 .header {
-  background: linear-gradient(90deg, #FF6B35 0%, #F4A261 100%);
+  background: linear-gradient(90deg, #2c3e50 0%, #3498db 100%);
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
 }
 .header-container {
   max-width: 1200px;
@@ -37,11 +37,11 @@
 }
 .nav-link:hover, .nav-signup {
   background: #fff;
-  color: #FF6B35;
+  color: #3498db;
 }
 .nav-signup {
   background: #fff;
-  color: #FF6B35;
+  color: #3498db;
   font-weight: bold;
 }
 .dropbtn {
@@ -60,34 +60,34 @@
   position: absolute;
   background-color: #f1f1f1;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(44,62,80,0.2);
   z-index: 1;
 }
 .dropdown-content a {
-  color: black;
+  color: #2c3e50;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
 }
-.dropdown-content a:hover {background-color: #ddd;}
+.dropdown-content a:hover {background-color: #e9ecef;}
 .dropdown:hover .dropdown-content {display: block;}
-.dropdown:hover .dropbtn {background-color: #fff; color: #FF6B35;}
+.dropdown:hover .dropbtn {background-color: #fff; color: #3498db;}
 
 /* Main Container */
 .main-container {
   display: flex;
   min-height: calc(100vh - 80px);
-  background-color: #f8f9fa;
+  background: linear-gradient(120deg, #f8f9fa 0%, #e9ecef 60%, #dee2e6 100%);
 }
 
 /* Sidebar */
 .sidebar {
   width: 280px;
-  background: white;
+  background: #fff;
   border-right: 1px solid #e9ecef;
   padding: 2rem 1.5rem;
   overflow-y: auto;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+  box-shadow: 2px 0 8px rgba(44,62,80,0.05);
 }
 
 .sidebar-section {
@@ -97,10 +97,10 @@
 .sidebar-section h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: #2c3e50;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #FF6B35;
+  border-bottom: 2px solid #3498db;
 }
 
 .search-box {
@@ -127,26 +127,26 @@
   align-items: center;
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
-  color: #555;
+  color: #34495e;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .sidebar-label:hover {
-  color: #FF6B35;
+  color: #3498db;
 }
 
 .sidebar-checkbox {
   margin-right: 0.75rem;
   width: 16px;
   height: 16px;
-  accent-color: #FF6B35;
+  accent-color: #3498db;
 }
 
 .clear-filters-btn {
   width: 100%;
   padding: 0.75rem;
-  background: #FF6B35;
+  background: #3498db;
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -156,7 +156,7 @@
 }
 
 .clear-filters-btn:hover {
-  background: #e55a2b;
+  background: #2c3e50;
 }
 
 /* Main Content */
@@ -178,7 +178,7 @@
 .content-header h1 {
   font-size: 2rem;
   font-weight: bold;
-  color: #333;
+  color: #2c3e50;
   margin: 0;
 }
 
@@ -190,7 +190,7 @@
 
 .results-count {
   font-size: 0.9rem;
-  color: #666;
+  color: #3498db;
   background: #e9ecef;
   padding: 0.5rem 1rem;
   border-radius: 1rem;
@@ -222,22 +222,23 @@
 /* Cars Grid */
 .cars-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 2rem;
 }
 
 .car-card {
-  background: white;
+  background: #fff;
   border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 24px rgba(52, 152, 219, 0.10);
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
 }
 
 .car-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 10px 25px -5px rgba(52,152,219,0.13);
 }
 
 .car-image-wrapper {
@@ -266,16 +267,16 @@
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
+  background: #3498db;
+  color: #fff;
 }
 
 .car-badge.available {
-  background: #28a745;
-  color: white;
+  background: #27ae60;
 }
 
 .car-badge.unavailable {
-  background: #dc3545;
-  color: white;
+  background: #e74c3c;
 }
 
 .car-info {
@@ -285,13 +286,13 @@
 .car-info h4 {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #333;
+  color: #2c3e50;
   margin: 0 0 0.5rem 0;
   line-height: 1.3;
 }
 
 .car-meta {
-  color: #666;
+  color: #34495e;
   font-size: 0.9rem;
   margin: 0.5rem 0;
   display: flex;
@@ -300,19 +301,20 @@
 }
 
 .car-features {
-  color: #888;
+  color: #3498db;
   font-size: 0.85rem;
   margin: 0.5rem 0 1rem 0;
 }
 
 .car-price-section {
   margin: 1rem 0;
+  color: #2c3e50;
 }
 
 .car-price {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #FF6B35;
+  color: #3498db;
   margin: 0;
 }
 
@@ -330,40 +332,35 @@
 
 .book-btn, .details-btn {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.7rem 1.2rem;
   border: none;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
   font-size: 0.9rem;
+  background: #3498db;
+  color: #fff;
 }
 
-.book-btn {
-  background: #FF6B35;
-  color: white;
-}
-
-.book-btn:hover:not(:disabled) {
-  background: #e55a2b;
-  transform: translateY(-1px);
+.book-btn:hover:not(:disabled), .details-btn:hover {
+  background: #2c3e50;
 }
 
 .book-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
+  background: #bdc3c7;
+  color: #fff;
 }
 
 .details-btn {
-  background: transparent;
-  color: #FF6B35;
-  border: 1px solid #FF6B35;
+  background: #fff;
+  color: #3498db;
+  border: 1px solid #3498db;
 }
 
 .details-btn:hover {
-  background: #FF6B35;
-  color: white;
+  background: #3498db;
+  color: #fff;
 }
 
 /* Modal Styles */
@@ -744,4 +741,59 @@
   .car-basic-info h3 {
     font-size: 1.5rem;
   }
+}
+
+.register-popup {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #3498db 60%, #2c3e50 100%);
+  color: #fff;
+  padding: 1.1rem 2.2rem 1.1rem 1.5rem;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  z-index: 2000;
+  font-size: 1.1rem;
+  animation: popup-fade-in 0.4s;
+}
+@keyframes popup-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.popup-message {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.popup-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: color 0.2s;
+}
+.popup-close:hover {
+  color: #ff7300;
+}
+.popup-action {
+  background: #fff;
+  color: #3498db;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.5rem 1.3rem;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-left: 1rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px rgba(52,152,219,0.10);
+}
+.popup-action:hover {
+  background: #3498db;
+  color: #fff;
 }

@@ -1,6 +1,6 @@
 .login-bg {
   min-height: 100vh;
-  background: linear-gradient(120deg, #fff7ed 0%, #ffe5d0 60%, #ffd6b3 100%);
+  background: linear-gradient(120deg, #f8f9fa 0%, #e9ecef 60%, #dee2e6 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,14 +16,14 @@
   margin-bottom: 1.5rem;
 }
 .form-header h2 {
-  color: #ff6600;
+  color: #3498db;
   font-size: 2.2rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
   letter-spacing: 1px;
 }
 .form-header p {
-  color: #ff9800;
+  color: #2c3e50;
   font-size: 1.08rem;
 }
 .form-error {
@@ -46,27 +46,27 @@
 }
 .form-card {
   background: #fff;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.13);
+  box-shadow: 0 10px 20px rgba(44, 62, 80, 0.13);
   padding: 2.2rem 1.7rem;
-  border: 1.5px solid #ffe5d0;
+  border: 1.5px solid #e9ecef;
 }
 .form-input {
   width: 100%;
   padding: 1rem 0;
   margin-bottom: 1rem;
-  border: 1px solid #ffd6b3;
+  border: 1px solid #bdc3c7;
   border-radius: 0.5rem;
   font-size: 1rem;
   transition: border 0.2s;
 }
 .form-input:focus {
-  border-color: #333;
+  border-color: #3498db;
   outline: none;
 }
 .form-btn {
   width: 100%;
   padding: 0.85rem;
-  background: linear-gradient(90deg, #ff7300 60%, #ff9800 100%);
+  background: linear-gradient(90deg, #3498db 60%, #2c3e50 100%);
   color: #fff;
   border: none;
   border-radius: 0.6rem;
@@ -74,11 +74,11 @@
   font-size: 1.08rem;
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(255, 115, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);
 }
 .form-btn:hover {
-  background: linear-gradient(90deg, #e65c00 60%, #ff9800 100%);
-  box-shadow: 0 4px 16px rgba(255, 115, 0, 0.13);
+  background: linear-gradient(90deg, #2c3e50 60%, #3498db 100%);
+  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.13);
 }
 .form-switch {
   text-align: center;
@@ -89,23 +89,23 @@
 .form-link {
   background: none;
   border: none;
-  color: #ff7300;
+  color: #3498db;
   font-weight: 500;
   margin-left: 0.3rem;
   cursor: pointer;
   text-decoration: underline;
   font-size: 1rem;
   transition: color 0.2s, text-shadow 0.2s;
-  text-shadow: 0 1px 2px #ffd6b3;
+  text-shadow: 0 1px 2px #e9ecef;
 }
 .form-link:hover {
-  color: #e65c00;
-  text-shadow: 0 2px 6px #ffd6b3;
+  color: #2c3e50;
+  text-shadow: 0 2px 6px #e9ecef;
 }
 .forgot-link {
   display: block;
   margin: 12px 0 0 0;
-  color: #007bff;
+  color: #3498db;
   text-decoration: underline;
   cursor: pointer;
   font-size: 1rem;
@@ -113,6 +113,25 @@
   transition: color 0.2s;
 }
 .forgot-link:hover {
-  color: #e67c00;
+  color: #2c3e50;
   text-decoration: underline;
+}
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.05rem;
+  margin-bottom: 1.2rem;
+  transition: color 0.2s;
+}
+.back-link:hover {
+  color: #2c3e50;
+  text-decoration: underline;
+}
+.back-arrow {
+  font-size: 1.2rem;
+  margin-right: 0.2rem;
 }

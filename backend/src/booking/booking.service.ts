@@ -31,6 +31,10 @@ export class BookingService {
         return this.apiResponse.badRequest('Car is not available for booking');
       }
 
+      // Convert incoming date strings to Date objects
+      const startDate = new Date(createBookingDto.startDate);
+      const endDate = new Date(createBookingDto.endDate);
+
       // Check if car is already booked for the requested dates
       const conflictingBooking = await this.prisma.booking.findFirst({
         where: {
@@ -41,20 +45,20 @@ export class BookingService {
           OR: [
             {
               AND: [
-                { startDate: { lte: createBookingDto.startDate } },
-                { endDate: { gt: createBookingDto.startDate } },
+                { startDate: { lte: startDate } },
+                { endDate: { gt: startDate } },
               ],
             },
             {
               AND: [
-                { startDate: { lt: createBookingDto.endDate } },
-                { endDate: { gte: createBookingDto.endDate } },
+                { startDate: { lt: endDate } },
+                { endDate: { gte: endDate } },
               ],
             },
             {
               AND: [
-                { startDate: { gte: createBookingDto.startDate } },
-                { endDate: { lte: createBookingDto.endDate } },
+                { startDate: { gte: startDate } },
+                { endDate: { lte: endDate } },
               ],
             },
           ],
@@ -66,14 +70,12 @@ export class BookingService {
       }
 
       // Calculate total price
-      const startDate = new Date(createBookingDto.startDate);
-      const endDate = new Date(createBookingDto.endDate);
       const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const totalPrice = daysDiff * car.dailyRate;
 
       const booking = await this.prisma.booking.create({
         data: {
-          ...createBookingDto,
+          carId: createBookingDto.carId,
           userId,
           totalPrice,
           startDate: startDate,
@@ -573,6 +575,12 @@ export class BookingService {
               licensePlate: true,
               dailyRate: true,
               imageUrls: true,
+              location: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
           payment: {

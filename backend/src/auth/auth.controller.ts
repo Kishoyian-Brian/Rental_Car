@@ -60,6 +60,14 @@ import {
       return this.authService.createAdmin(adminData);
     }
   
+    @Post('create-agent')
+    @HttpCode(HttpStatus.CREATED)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
+    async createAgent(@Body(new ValidationPipe()) agentData: CreateUserDto) {
+      return this.authService.createAgent(agentData);
+    }
+  
     @Patch('approve-agent/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.ADMIN)

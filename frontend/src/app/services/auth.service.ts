@@ -45,4 +45,8 @@ export class AuthService {
       map(res => res.data)
     );
   }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
 }

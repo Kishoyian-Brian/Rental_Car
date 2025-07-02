@@ -19,6 +19,13 @@
   </div>
 </header>
 
+<!-- Register Offer Popup -->
+<div *ngIf="popupVisible" class="register-popup">
+  <span class="popup-message">Register to get offers today!</span>
+  <button class="popup-close" (click)="closePopup()">&times;</button>
+  <a routerLink="/login" [queryParams]="{mode: 'register'}" class="popup-action">Register Now</a>
+</div>
+
 <!-- Main Content -->
 <div class="main-container">
   <!-- Sidebar -->
@@ -207,13 +214,6 @@
             <p *ngIf="car.hourlyRate" class="car-hourly-price">${{ car.hourlyRate }}/hour</p>
           </div>
           <div class="car-actions">
-            <button 
-              class="book-btn" 
-              [disabled]="!car.available"
-              (click)="bookCar(car)"
-            >
-              {{ car.available ? 'Book Now' : 'Unavailable' }}
-            </button>
             <button class="details-btn" (click)="viewDetails(car)">View Details</button>
           </div>
         </div>
