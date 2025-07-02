@@ -94,15 +94,15 @@ export class AuthService {
     const normalizedRole = role.toLowerCase();
     switch (normalizedRole) {
       case 'admin':
-        this.router.navigate(['/admin-dashboard']).catch(err => console.error('Navigation error:', err));
+        this.router.navigate(['/admin-dashboard']);
         break;
       case 'agent':
-        this.router.navigate(['/agent-dashboard']).catch(err => console.error('Navigation error:', err));
+        this.router.navigate(['/agent-dashboard']);
         break;
       case 'user':
       case 'customer':
       default:
-        this.router.navigate(['/user-dashboard']).catch(err => console.error('Navigation error:', err));
+        this.router.navigate(['/user-dashboard']);
     }
   }
 } 

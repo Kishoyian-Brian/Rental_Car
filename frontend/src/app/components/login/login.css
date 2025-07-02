@@ -102,3 +102,17 @@
   color: #e65c00;
   text-shadow: 0 2px 6px #ffd6b3;
 }
+.forgot-link {
+  display: block;
+  margin: 12px 0 0 0;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: left;
+  transition: color 0.2s;
+}
+.forgot-link:hover {
+  color: #e67c00;
+  text-decoration: underline;
+}

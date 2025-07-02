@@ -860,3 +860,80 @@ button.close-btn:hover {
 .modern-table button.reject:hover {
   background: #b71c1c;
 }
+
+.admin-actions {
+  text-align: right;
+}
+.create-agent-form label {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: #333;
+  font-weight: 500;
+}
+.create-agent-form input {
+  width: 100%;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #ffd6b3;
+  border-radius: 0.3rem;
+  font-size: 0.97rem;
+  margin-top: 0.1rem;
+  margin-bottom: 0.2rem;
+}
+.create-agent-form button[type="submit"] {
+  background: #ff7300;
+  color: #fff;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.3rem 1.1rem;
+  font-size: 0.97rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.create-agent-form button[type="submit"]:disabled {
+  background: #ffd6b3;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.admin-profile-actions {
+  text-align: right;
+}
+.profile-update-form label {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: #333;
+  font-weight: 500;
+}
+.profile-update-form input {
+  width: 100%;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #ffd6b3;
+  border-radius: 0.3rem;
+  font-size: 0.97rem;
+  margin-top: 0.1rem;
+  margin-bottom: 0.2rem;
+}
+.profile-update-form button[type="submit"] {
+  background: #ff7300;
+  color: #fff;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.3rem 1.1rem;
+  font-size: 0.97rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.profile-update-form button[type="submit"]:disabled {
+  background: #ffd6b3;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.field-error {
+  color: #e53935;
+  font-size: 0.95rem;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}

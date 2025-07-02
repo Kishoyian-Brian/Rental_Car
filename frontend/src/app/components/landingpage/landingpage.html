@@ -61,7 +61,7 @@
     <p>Browse our selection of premium vehicles at competitive prices</p>
   </div>
   <div class="cars-grid">
-    <div class="car-card" *ngFor="let car of cars">
+    <div class="car-card" *ngFor="let car of cars | slice:0:3">
       <div class="car-image-wrapper">
         <img [src]="car.imageUrls && car.imageUrls.length ? car.imageUrls[0] : 'https://placehold.co/400x200'" [alt]="car.make + ' ' + car.model" class="car-image">
         <span *ngIf="car.isHotDeal" class="car-badge">HOT DEAL</span>

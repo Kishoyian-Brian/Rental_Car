@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -45,26 +46,40 @@ export class Login implements OnInit {
   onLogin(): void {
     this.isLoading = true;
     this.error = null;
+    
+    // Clear any existing tokens to ensure fresh authentication
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
         this.isLoading = false;
+        console.log('Login response:', response); // Debug log
+        
         const user = response.user;
         
         // Store user data and token in localStorage
         localStorage.setItem('token', response.accessToken);
         localStorage.setItem('user', JSON.stringify(user));
         
+        console.log('Stored token:', response.accessToken); // Debug log
+        console.log('User role:', user.role); // Debug log
+        
         // Redirect based on role (backend returns uppercase roles)
         if (user.role === 'ADMIN') {
+          console.log('Redirecting to admin dashboard'); // Debug log
           this.router.navigate(['/admin-dashboard']);
         } else if (user.role === 'AGENT') {
+          console.log('Redirecting to agent dashboard'); // Debug log
           this.router.navigate(['/agent-dashboard']);
         } else {
+          console.log('Redirecting to user dashboard'); // Debug log
           this.router.navigate(['/user-dashboard']);
         }
       },
       error: (err) => {
         this.isLoading = false;
+        console.error('Login error:', err); // Debug log
         this.error = err.error?.message || 'Login failed';
       }
     });

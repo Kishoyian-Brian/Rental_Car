@@ -18,7 +18,7 @@ export class Landingpage implements OnInit {
 
   ngOnInit() {
     this.carService.getCars().subscribe((cars) => {
-      this.cars = cars;
+      this.cars = cars.slice(0, 3);
     });
     this.reviewService.getRatings().subscribe((ratings) => {
       this.ratings = ratings;

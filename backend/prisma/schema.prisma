@@ -30,6 +30,7 @@ model User {
   bookings    Booking[]
   payments    Payment[]
   reviews     Review[]
+  notifications Notification[]
   @@map("users")
 }
 
@@ -113,6 +114,16 @@ model Payment {
   @@map("payments")
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  type      String   // e.g., 'BOOKING_ACCEPTED', 'BOOKING_REJECTED'
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 enum UserRole {
   CUSTOMER
   AGENT
@@ -123,6 +134,7 @@ enum UserStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+  PENDING
 }
 
 enum CarCategory {

@@ -7,6 +7,8 @@ import { LoginDto } from '../dto/login.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +16,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private mailerService: MailerService,
+    private notificationService: NotificationService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -92,6 +95,11 @@ export class AuthService {
         throw new BadRequestException('Invalid credentials');
       }
 
+      // Check user status
+      if (user.status !== 'ACTIVE') {
+        throw new BadRequestException('Account is not active. Please contact support or an administrator.');
+      }
+
       // Update last login
       await this.prisma.user.update({
         where: { id: user.id },
@@ -166,52 +174,40 @@ export class AuthService {
     }
   }
 
-  async createAgent(agentData: CreateUserDto) {
-    try {
-      // Check if user already exists
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: agentData.email },
-      });
-
-      if (existingUser) {
-        throw new ConflictException('User with this email already exists');
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(agentData.password, 10);
-
-      // Create agent user
-      const agent = await this.prisma.user.create({
-        data: {
-          email: agentData.email,
-          password: hashedPassword,
-          name: agentData.name,
-          phone: agentData.phone,
-          role: 'AGENT',
-          status: 'ACTIVE',
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          createdAt: true,
-        },
-      });
-
-      return {
-        success: true,
-        message: 'Agent created successfully',
-        data: agent,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async requestPasswordReset(dto: { email: string }) {
-    // TODO: Implement password reset request logic
-    return { message: 'Password reset email sent' };
+    // Always return a generic message for security
+    const genericMsg = { message: 'If this email exists, a password reset link has been sent.' };
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user) return genericMsg;
+
+    // Generate a 6-digit numeric code as the reset token
+    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    // Save token and expiry to user
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: token,
+        resetTokenExpiry: expiry,
+      },
+    });
+
+    // Send reset email
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/reset-password?token=${token}`;
+    await this.mailerService.sendEmail({
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `
+        <p>Hello,</p>
+        <p>You requested a password reset for your RentCar account.</p>
+        <p>Your password reset code is: <b>${token}</b></p>
+        <p>Or click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 1 hour.</p>
+        <p>If you did not request this, you can ignore this email.</p>
+      `
+    });
+
+    return genericMsg;
   }
 
   async resetPassword(dto: ResetPasswordDto) {
@@ -248,6 +244,50 @@ export class AuthService {
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async approveAgent(agentId: string) {
+    try {
+      const agent = await this.prisma.user.findUnique({ where: { id: agentId, role: 'AGENT' } });
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+      if (agent.status === 'ACTIVE') {
+        return { success: false, message: 'Agent is already active' };
+      }
+      const updated = await this.prisma.user.update({
+        where: { id: agentId },
+        data: { status: 'ACTIVE' },
+        select: { id: true, email: true, name: true, role: true, status: true }
+      });
+      // Send in-app notification
+      await this.notificationService.createNotification(
+        agent.id,
+        'Your agent account has been approved! You can now log in and start managing rentals.',
+        'AGENT_APPROVED'
+      );
+      // Send email notification
+      await this.mailerService.sendEmail({
+        to: agent.email,
+        subject: 'Your Agent Account Has Been Approved',
+        html: `<h2>Congratulations!</h2><p>Your agent account on RentCar has been approved. You can now log in and start managing rentals.</p>`
+      });
+      return { success: true, message: 'Agent approved', data: updated };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  async getPendingAgents() {
+    try {
+      const agents = await this.prisma.user.findMany({
+        where: { role: 'AGENT', status: 'PENDING' },
+        select: { id: true, email: true, name: true, status: true, createdAt: true }
+      });
+      return { success: true, data: agents };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : String(error) };
     }
   }
 

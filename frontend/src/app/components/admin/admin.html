@@ -45,10 +45,42 @@
   <div class="header">
     <h2>Dashboard</h2>
     <div class="user-area">
-      <img src="https://via.placeholder.com/40" alt="Admin">
+      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2QjcyODAiLz4KPHN2ZyB4PSIxMCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAxMkMxNC4yMSAxMiAxNiAxMC4yMSAxNiA4QzE2IDUuNzkgMTQuMjEgNCAxMiA0QzkuNzkgNCA4IDUuNzkgOCA4QzggMTAuMjEgOS43OSAxMiAxMiAxMlpNMTIgMTRMOS4zMyAxNCA0IDE1LjM0IDQgMThWMjBIMjBWMThDMjAgMTUuMzQgMTQuNjcgMTQgMTIgMTRaIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="Admin">
       <button class="logout-btn" (click)="logout()">Logout</button>
     </div>
   </div>
+
+  <!-- Pending Agents Section -->
+  <section class="pending-agents-section" style="margin-bottom:2rem;">
+    <h3>Pending Agents</h3>
+    <div *ngIf="pendingAgentsError" class="pending-agents-error">{{ pendingAgentsError }}</div>
+    <div *ngIf="pendingAgents.length === 0 && !pendingAgentsError" class="no-pending-agents">No pending agents.</div>
+    <table class="modern-table" *ngIf="pendingAgents.length > 0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Created</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let agent of pendingAgents">
+          <td>{{ agent.name || '-' }}</td>
+          <td>{{ agent.email }}</td>
+          <td>{{ agent.createdAt | date:'short' }}</td>
+          <td>{{ agent.status }}</td>
+          <td>
+            <button (click)="approveAgent(agent.id)" [disabled]="approvingAgentId === agent.id">
+              <span *ngIf="approvingAgentId === agent.id" class="spinner"></span>
+              Approve
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
   <!-- Cards -->
   <div class="cards">
@@ -157,8 +189,8 @@
           <td>{{ review.comment }}</td>
           <td>{{ review.createdAt | date:'short' }}</td>
           <td>
-            <button (click)="editReview(review)">Edit</button>
-            <button (click)="deleteReview(review)">Delete</button>
+            <button (click)="editReview(review)" disabled>Edit</button>
+            <button (click)="deleteReview(review)" disabled>Delete</button>
           </td>
         </tr>
       </tbody>
@@ -205,69 +237,94 @@
         <div class="form-row">
           <div class="form-group">
             <label>Make</label>
-            <input formControlName="make" required />
+            <input formControlName="make" required autocomplete="off" />
+            <div *ngIf="carForm.get('make')?.invalid && carForm.get('make')?.touched" class="field-error">Make is required.</div>
           </div>
           <div class="form-group">
             <label>Model</label>
-            <input formControlName="model" required />
+            <input formControlName="model" required autocomplete="off" />
+            <div *ngIf="carForm.get('model')?.invalid && carForm.get('model')?.touched" class="field-error">Model is required.</div>
           </div>
           <div class="form-group">
             <label>Year</label>
-            <input type="number" formControlName="year" required />
+            <input type="number" formControlName="year" required autocomplete="off" />
+            <div *ngIf="carForm.get('year')?.invalid && carForm.get('year')?.touched" class="field-error">
+              <span *ngIf="carForm.get('year')?.errors?.['required']">Year is required.</span>
+              <span *ngIf="carForm.get('year')?.errors?.['min']">Year must be after 1900.</span>
+              <span *ngIf="carForm.get('year')?.errors?.['max']">Year is too far in the future.</span>
+            </div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>License Plate</label>
-            <input formControlName="licensePlate" required />
+            <input formControlName="licensePlate" required autocomplete="off" />
+            <div *ngIf="carForm.get('licensePlate')?.invalid && carForm.get('licensePlate')?.touched" class="field-error">License Plate is required.</div>
           </div>
           <div class="form-group">
             <label>Category</label>
-            <select formControlName="category" required>
+            <select formControlName="category" required autocomplete="off">
               <option *ngFor="let c of carCategories" [value]="c">{{ c }}</option>
             </select>
+            <div *ngIf="carForm.get('category')?.invalid && carForm.get('category')?.touched" class="field-error">Category is required.</div>
           </div>
           <div class="form-group">
             <label>Transmission</label>
-            <select formControlName="transmission" required>
+            <select formControlName="transmission" required autocomplete="off">
               <option *ngFor="let t of transmissions" [value]="t">{{ t }}</option>
             </select>
+            <div *ngIf="carForm.get('transmission')?.invalid && carForm.get('transmission')?.touched" class="field-error">Transmission is required.</div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Fuel Type</label>
-            <select formControlName="fuelType" required>
+            <select formControlName="fuelType" required autocomplete="off">
               <option *ngFor="let f of fuelTypes" [value]="f">{{ f }}</option>
             </select>
+            <div *ngIf="carForm.get('fuelType')?.invalid && carForm.get('fuelType')?.touched" class="field-error">Fuel Type is required.</div>
           </div>
           <div class="form-group">
             <label>Seats</label>
-            <input type="number" formControlName="seats" required />
+            <input type="number" formControlName="seats" required autocomplete="off" />
+            <div *ngIf="carForm.get('seats')?.invalid && carForm.get('seats')?.touched" class="field-error">
+              <span *ngIf="carForm.get('seats')?.errors?.['required']">Seats is required.</span>
+              <span *ngIf="carForm.get('seats')?.errors?.['min']">Minimum 1 seat.</span>
+              <span *ngIf="carForm.get('seats')?.errors?.['max']">Maximum 20 seats.</span>
+            </div>
           </div>
           <div class="form-group">
             <label>Doors</label>
-            <input type="number" formControlName="doors" required />
+            <input type="number" formControlName="doors" required autocomplete="off" />
+            <div *ngIf="carForm.get('doors')?.invalid && carForm.get('doors')?.touched" class="field-error">
+              <span *ngIf="carForm.get('doors')?.errors?.['required']">Doors is required.</span>
+              <span *ngIf="carForm.get('doors')?.errors?.['min']">Minimum 2 doors.</span>
+              <span *ngIf="carForm.get('doors')?.errors?.['max']">Maximum 6 doors.</span>
+            </div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Daily Rate</label>
-            <input type="number" formControlName="dailyRate" required />
+            <input type="number" formControlName="dailyRate" required autocomplete="off" />
+            <div *ngIf="carForm.get('dailyRate')?.invalid && carForm.get('dailyRate')?.touched" class="field-error">
+              <span *ngIf="carForm.get('dailyRate')?.errors?.['required']">Daily Rate is required.</span>
+              <span *ngIf="carForm.get('dailyRate')?.errors?.['min']">Must be positive.</span>
+            </div>
           </div>
           <div class="form-group">
             <label>Hourly Rate</label>
-            <input type="number" formControlName="hourlyRate" />
+            <input type="number" formControlName="hourlyRate" autocomplete="off" />
           </div>
           <div class="form-group">
             <label>Available</label>
-            <input type="checkbox" formControlName="available" />
+            <input type="checkbox" formControlName="available" autocomplete="off" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Location</label>
-            <select formControlName="locationId">
+            <select formControlName="locationId" autocomplete="off">
               <option value="">Select Location</option>
               <option *ngFor="let loc of locations" [value]="loc.id">{{ loc.name }}</option>
             </select>
@@ -276,7 +333,7 @@
             <label>Features</label>
             <div class="features-list">
               <div *ngFor="let feature of featuresControls; let i = index">
-                <input [formControl]="feature" placeholder="Feature" />
+                <input [formControl]="feature" placeholder="Feature" autocomplete="off" />
                 <button type="button" (click)="removeFeature(i)">Remove</button>
               </div>
               <button type="button" (click)="addFeature()">Add Feature</button>
@@ -286,7 +343,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Images</label>
-            <input type="file" (change)="onImageChange($event)" multiple />
+            <input type="file" (change)="onImageChange($event)" multiple autocomplete="off" />
           </div>
         </div>
         <div class="modal-actions">
@@ -299,4 +356,33 @@
 
   <!-- The rest of the dashboard (tables, modals) will be updated next -->
   <ng-content></ng-content>
+
+  <div class="admin-profile-actions" style="margin-bottom:1.5rem;">
+    <button (click)="openProfileModal()">Update Profile</button>
+  </div>
+
+  <!-- Profile Update Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal">
+    <div class="modal-card" (click)="$event.stopPropagation()" style="max-width:400px;">
+      <button class="modal-close" (click)="closeProfileModal()">&times;</button>
+      <h3>Update Profile</h3>
+      <form (ngSubmit)="submitProfileUpdate()" class="profile-update-form">
+        <label>Name:
+          <input type="text" [(ngModel)]="profileForm.name" name="profileName" required autocomplete="name" />
+        </label>
+        <label>Email:
+          <input type="email" [(ngModel)]="profileForm.email" name="profileEmail" required autocomplete="email" />
+        </label>
+        <label>Password:
+          <input type="password" [(ngModel)]="profileForm.password" name="profilePassword" placeholder="New password (leave blank to keep)" autocomplete="new-password" />
+        </label>
+        <div *ngIf="profileError" class="modal-error-message">{{ profileError }}</div>
+        <div *ngIf="profileSuccess" class="modal-success-message">{{ profileSuccess }}</div>
+        <button type="submit" [disabled]="profileLoading">
+          <span *ngIf="profileLoading" class="spinner"></span>
+          Update Profile
+        </button>
+      </form>
+    </div>
+  </div>
 </div>

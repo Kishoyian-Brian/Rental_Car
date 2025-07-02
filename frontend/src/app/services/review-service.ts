@@ -37,4 +37,14 @@ export class ReviewService {
       map(response => response.data)
     );
   }
+
+  createReview(review: { rating: number; comment?: string; carId: string }): Observable<any> {
+    return this.http.post<any>(this.apiUrl, review);
+  }
+
+  getReviewsByCar(carId: string): Observable<Review[]> {
+    return this.http.get<{ data: Review[] }>(`${this.apiUrl}/car/${carId}`).pipe(
+      map(response => response.data)
+    );
+  }
 } 

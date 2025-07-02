@@ -6,7 +6,9 @@ import { ReviewService, Review } from '../../services/review-service';
 import { BookingService, Booking } from '../../services/booking-service';
 import { finalize } from 'rxjs/operators';
 import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { AdminService } from '../../services/admin';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-admin',
@@ -16,6 +18,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     DatePipe,
     DecimalPipe
   ]
@@ -41,6 +44,14 @@ export class Admin implements OnInit {
   dashboardSection: 'cars' | 'bookings' | 'reviews' = 'cars';
   pendingDeleteCar: Car | null = null;
   showDeleteConfirm: boolean = false;
+  pendingAgents: any[] = [];
+  approvingAgentId: string | null = null;
+  pendingAgentsError: string = '';
+  showProfileModal: boolean = false;
+  profileForm = { name: '', email: '', password: '' };
+  profileLoading: boolean = false;
+  profileError: string = '';
+  profileSuccess: string = '';
 
   carCategories = [
     'ECONOMY', 'COMPACT', 'MID_SIZE', 'FULL_SIZE', 'SUV', 'LUXURY', 'VAN', 'SPORTS'
@@ -53,7 +64,9 @@ export class Admin implements OnInit {
     private locationService: LocationService,
     private reviewService: ReviewService,
     private bookingService: BookingService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private adminService: AdminService,
+    private authService: AuthService
   ) {
     this.carForm = this.fb.group({
       id: [''],
@@ -87,22 +100,103 @@ export class Admin implements OnInit {
     });
   }
 
+  private isAuthenticated(): boolean {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      return false;
+    }
+    
+    try {
+      const userData = JSON.parse(user);
+      return userData.role === 'ADMIN';
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      return false;
+    }
+  }
+
   ngOnInit() {
-    this.loadAll();
+    // Check if user is authenticated before loading data
+    if (!this.isAuthenticated()) {
+      console.log('Admin - User not authenticated, redirecting to login'); // Debug log
+      // Clear any invalid data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Redirect to login if not authenticated
+      window.location.href = '/login';
+      return;
+    }
+    
+    console.log('Admin - User authenticated, loading data'); // Debug log
+    
+    // Add a longer delay to ensure token is properly set in interceptor
+    setTimeout(() => {
+      console.log('Admin - Loading data after delay'); // Debug log
+      this.loadAll();
+      this.loadPendingAgents();
+    }, 1000); // Increased delay to 1 second
   }
 
   loadAll() {
     this.isLoading = true;
-    this.carService.getCars().pipe(finalize(() => this.isLoading = false)).subscribe(cars => {
-      this.cars = cars;
-      this.filteredCars = cars;
+    this.carService.getCars().pipe(finalize(() => this.isLoading = false)).subscribe({
+      next: (cars) => {
+        this.cars = cars;
+        this.filteredCars = cars;
+      },
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Failed to load cars.');
+      }
     });
-    this.locationService.getLocations().subscribe(locations => this.locations = locations);
-    this.reviewService.getRatings().subscribe(reviews => this.reviews = reviews);
-    this.bookingService.getUserBookings('all').subscribe(bookings => {
-      this.bookings = bookings;
-      // Calculate total revenue (placeholder: sum of totalPrice)
-      this.totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+    this.locationService.getLocations().subscribe({
+      next: (locations) => this.locations = locations,
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Failed to load locations.');
+      }
+    });
+    this.reviewService.getRatings().subscribe({
+      next: (reviews) => this.reviews = reviews,
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Failed to load reviews.');
+      }
+    });
+    this.bookingService.getUserBookings('all').subscribe({
+      next: (bookings) => {
+        this.bookings = bookings;
+        this.totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+      },
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Failed to load bookings.');
+      }
+    });
+  }
+
+  loadPendingAgents() {
+    this.adminService.getPendingAgents().subscribe({
+      next: (res) => {
+        this.pendingAgents = res.data || [];
+        this.pendingAgentsError = '';
+      },
+      error: (err) => {
+        this.pendingAgentsError = err?.error?.message || 'Failed to load pending agents.';
+        this.showToast(this.pendingAgentsError);
+      }
+    });
+  }
+
+  approveAgent(agentId: string) {
+    this.approvingAgentId = agentId;
+    this.adminService.approveAgent(agentId).subscribe({
+      next: () => {
+        this.pendingAgents = this.pendingAgents.filter(a => a.id !== agentId);
+        this.approvingAgentId = null;
+      },
+      error: (err) => {
+        this.pendingAgentsError = err?.error?.message || 'Failed to approve agent.';
+        this.approvingAgentId = null;
+      }
     });
   }
 
@@ -182,13 +276,19 @@ export class Admin implements OnInit {
         }
       });
     } else {
-      this.carService.createCar(formData).subscribe(() => {
-        this.loadAll();
-        this.showAddCarModal = false;
-        this.showToast('Car added successfully!');
-        this.carForm.reset({ available: true, features: [] });
-        this.featuresArray.clear();
-        this.imageFiles = [];
+      this.carService.createCar(formData).subscribe({
+        next: () => {
+          this.loadAll();
+          this.showAddCarModal = false;
+          this.showToast('Car added successfully!');
+          this.carForm.reset({ available: true, features: [] });
+          this.featuresArray.clear();
+          this.imageFiles = [];
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Failed to add car.';
+          this.showToast(msg);
+        }
       });
     }
   }
@@ -299,7 +399,7 @@ export class Admin implements OnInit {
 
   public logout() {
     localStorage.clear();
-    window.location.reload();
+    window.location.href = '/';
   }
 
   setSection(section: 'cars' | 'bookings' | 'reviews') {
@@ -312,12 +412,12 @@ export class Admin implements OnInit {
   }
 
   editReview(review: Review) {
-    // Placeholder for review edit logic
+    // Disabled until implemented
     this.showToast('Edit review not implemented');
   }
 
   deleteReview(review: Review) {
-    // Placeholder for review delete logic
+    // Disabled until implemented
     this.showToast('Delete review not implemented');
   }
 
@@ -351,6 +451,49 @@ export class Admin implements OnInit {
       error: (err) => {
         const msg = err?.error?.message || 'Failed to reject booking.';
         this.showToast(msg);
+      }
+    });
+  }
+
+  openProfileModal() {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const parsed = JSON.parse(user);
+      this.profileForm = { name: parsed.name || '', email: parsed.email || '', password: '' };
+    }
+    this.profileError = '';
+    this.profileSuccess = '';
+    this.showProfileModal = true;
+  }
+
+  closeProfileModal() {
+    this.showProfileModal = false;
+    this.profileError = '';
+    this.profileSuccess = '';
+    this.profileForm.password = '';
+  }
+
+  submitProfileUpdate() {
+    this.profileLoading = true;
+    this.profileError = '';
+    this.profileSuccess = '';
+    const updateData: any = {
+      name: this.profileForm.name,
+      email: this.profileForm.email
+    };
+    if (this.profileForm.password) {
+      updateData.password = this.profileForm.password;
+    }
+    this.authService.updateProfile(updateData).subscribe({
+      next: (updated) => {
+        this.profileLoading = false;
+        this.profileSuccess = 'Profile updated successfully!';
+        localStorage.setItem('user', JSON.stringify(updated));
+        setTimeout(() => this.closeProfileModal(), 1500);
+      },
+      error: (err) => {
+        this.profileLoading = false;
+        this.profileError = err?.error?.message || 'Failed to update profile.';
       }
     });
   }

@@ -7,6 +7,7 @@ import { Bookings } from './components/bookings/bookings';
 import { Admin } from './components/admin/admin';
 import { AllCars } from './components/all-cars/all-cars';
 import { Booknow } from './components/booknow/booknow';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password';
 
 export const routes: Routes = [
     {
@@ -40,5 +41,9 @@ export const routes: Routes = [
     {
         path:'book-car',
         component: Booknow
+    },
+    {
+        path: 'forgot-password',
+        component: ForgotPasswordComponent
     }
 ];

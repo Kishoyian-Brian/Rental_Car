@@ -9,6 +9,7 @@ import { PaymentModule } from './payment/payment.module';
 import { ReviewModule } from './review/review.module';
 import { LocationModule } from './location/location.module';
 import { SharedModule } from './shared/shared.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SharedModule } from './shared/shared.module';
     ReviewModule, 
     LocationModule,
     SharedModule,
+    NotificationModule,
   ],
   providers: [AppService],
 })

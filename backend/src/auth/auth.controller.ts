@@ -5,12 +5,20 @@ import {
     HttpCode,
     HttpStatus,
     ValidationPipe,
+    Patch,
+    Param,
+    UseGuards,
+    Get,
   } from '@nestjs/common';
   import { AuthService } from './auth.service';
   import { RegisterDto } from '../dto/register.dto';
   import { LoginDto } from '../dto/login.dto';
   import { ResetPasswordDto } from '../dto/reset-password.dto';
   import { CreateUserDto } from '../dto/create-user.dto';
+  import { JwtAuthGuard } from './guards/jwt-auth.guard';
+  import { RolesGuard } from './guards/roles.guard';
+  import { Roles } from './decorators/roles.decorator';
+  import { UserRole } from '../interfaces/user.interface';
   
   class RequestPasswordResetDto {
     email: string;
@@ -52,10 +60,18 @@ import {
       return this.authService.createAdmin(adminData);
     }
   
-    @Post('create-agent')
-    @HttpCode(HttpStatus.CREATED)
-    async createAgent(@Body(new ValidationPipe()) agentData: CreateUserDto) {
-      return this.authService.createAgent(agentData);
+    @Patch('approve-agent/:id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
+    async approveAgent(@Param('id') id: string) {
+      return this.authService.approveAgent(id);
+    }
+  
+    @Get('pending-agents')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
+    async getPendingAgents() {
+      return this.authService.getPendingAgents();
     }
   }
   

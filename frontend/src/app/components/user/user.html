@@ -5,7 +5,56 @@
     <div class="user-header-actions">
       <input type="text" placeholder="Search for a Car..." class="user-search" [(ngModel)]="searchTerm" (input)="onSearch()" (keyup.enter)="onSearch()" />
       <button class="user-search-btn" (click)="onSearch()">Search</button>
-      <a class="user-bookings-link" routerLink="/user-bookings">Bookings</a>
+      <button class="user-bookings-link" (click)="goToBookings()">Bookings</button>
+      <div class="icon-wrapper">
+        <button class="icon-btn" (click)="toggleNotificationsDropdown()">
+          <span class="fa fa-bell"></span>
+          <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+        </button>
+        <div class="icon-dropdown notifications-dropdown" *ngIf="showNotificationsDropdown">
+          <h4>Notifications</h4>
+          <div *ngIf="notifications.length === 0" class="notification-empty">No notifications</div>
+          <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+            <span class="notification-message">{{ notif.message }}</span>
+            <span class="notification-date">{{ notif.createdAt | date:'short' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="icon-wrapper">
+        <button class="icon-btn" (click)="toggleProfileDropdown()">
+          <span class="fa fa-user"></span>
+        </button>
+        <div class="icon-dropdown profile-dropdown" *ngIf="showProfileDropdown">
+          <h4>My Profile</h4>
+          <div *ngIf="!editingProfile">
+            <div *ngIf="userProfile" class="user-profile-details">
+              <p><strong>Name:</strong> {{ userProfile.name }}</p>
+              <p><strong>Email:</strong> {{ userProfile.email }}</p>
+              <p><strong>Role:</strong> {{ userProfile.role }}</p>
+            </div>
+            <button class="edit-profile-btn" (click)="startEditProfile()">Edit Profile</button>
+            <button class="logout-btn" (click)="logout()">Logout</button>
+            <div *ngIf="profileUpdateSuccess" class="profile-success">Profile updated successfully!</div>
+            <div *ngIf="profileUpdateError" class="profile-error">{{ profileUpdateError }}</div>
+          </div>
+          <form *ngIf="editingProfile" (ngSubmit)="submitEditProfile()" class="edit-profile-form">
+            <label>Name:
+              <input type="text" [(ngModel)]="editProfileData.name" name="editName" required />
+            </label>
+            <label>Email:
+              <input type="email" [(ngModel)]="editProfileData.email" name="editEmail" required />
+            </label>
+            <label>Password:
+              <input type="password" [(ngModel)]="editProfileData.password" name="editPassword" placeholder="New password (leave blank to keep)" />
+            </label>
+            <div class="edit-profile-actions">
+              <button type="submit" class="save-btn">Save</button>
+              <button type="button" class="cancel-btn" (click)="cancelEditProfile()">Cancel</button>
+            </div>
+            <div *ngIf="profileUpdateError" class="profile-error">{{ profileUpdateError }}</div>
+          </form>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -86,6 +135,38 @@
           <p class="modal-desc">Price: ${{ selectedCar?.dailyRate }}/Day</p>
           <p class="modal-desc">Features: {{ selectedCar?.features?.join(', ') || 'None' }}</p>
 
+          <!-- Car Reviews Section -->
+          <div class="car-reviews-section">
+            <h3>Reviews</h3>
+            <div *ngIf="carReviews.length === 0" class="no-reviews">No reviews yet.</div>
+            <div *ngFor="let review of carReviews" class="car-review">
+              <div class="review-header">
+                <span class="review-user">{{ review.user?.name || 'User' }}</span>
+                <span class="review-rating">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
+              </div>
+              <div class="review-comment">{{ review.comment }}</div>
+              <div class="review-date">{{ review.createdAt | date:'mediumDate' }}</div>
+            </div>
+            <div *ngIf="!hasReviewed" class="review-form-section">
+              <h4>Add Your Review</h4>
+              <form (ngSubmit)="submitReview()" class="review-form">
+                <label>Rating:
+                  <select [(ngModel)]="reviewForm.rating" name="reviewRating" required [disabled]="reviewSubmitting">
+                    <option *ngFor="let r of [5,4,3,2,1]" [value]="r">{{ r }}</option>
+                  </select>
+                </label>
+                <label>Comment:
+                  <textarea [(ngModel)]="reviewForm.comment" name="reviewComment" rows="2" [disabled]="reviewSubmitting"></textarea>
+                </label>
+                <button type="submit" class="review-submit-btn" [disabled]="reviewSubmitting">Submit</button>
+                <span *ngIf="reviewSubmitting" class="spinner"></span>
+                <div *ngIf="reviewSuccess" class="review-success">Review submitted!</div>
+                <div *ngIf="reviewError" class="review-error">{{ reviewError }}</div>
+              </form>
+            </div>
+            <div *ngIf="hasReviewed" class="already-reviewed">You have already reviewed this car.</div>
+          </div>
+
           <div *ngIf="bookingSuccess" class="modal-success-message">
             <span>Booking successful! Thank you for your reservation.</span>
           </div>
@@ -105,7 +186,11 @@
                 <option *ngFor="let loc of locations" [value]="loc.id">{{ loc.name }} ({{ loc.city }})</option>
               </select>
             </div>
-            <button class="modal-book-btn" type="submit">Book</button>
+            <div *ngIf="bookingError" class="modal-error-message">{{ bookingError }}</div>
+            <button class="modal-book-btn" type="submit" [disabled]="bookingLoading">
+              <span *ngIf="bookingLoading" class="spinner"></span>
+              Book
+            </button>
           </form>
         </div>
       </div>

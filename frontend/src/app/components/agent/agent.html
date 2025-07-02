@@ -1,1 +1,21 @@
-<p>agent works!</p>
+<div class="agent-dashboard">
+  <h2>Welcome, {{ userName || 'Agent' }}</h2>
+  <div *ngIf="approvalStatus !== 'ACTIVE'" class="approval-warning">
+    <strong>Your account is not yet approved.</strong>
+    <p>Please wait for an admin to approve your agent account. You will be notified here once approved.</p>
+  </div>
+  <div *ngIf="approvalStatus === 'ACTIVE'">
+    <div class="notifications-section">
+      <h3>Notifications <span *ngIf="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span></h3>
+      <div *ngIf="notifications.length === 0" class="no-notifications">No notifications yet.</div>
+      <ul class="notifications-list">
+        <li *ngFor="let notif of notifications" [class.unread]="!notif.read">
+          <span class="notif-message">{{ notif.message }}</span>
+          <span class="notif-date">{{ notif.createdAt | date:'short' }}</span>
+        </li>
+      </ul>
+    </div>
+    <!-- Agent dashboard content goes here -->
+    <p>Your agent dashboard is active. Start managing rentals!</p>
+  </div>
+</div>

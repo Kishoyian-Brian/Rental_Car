@@ -43,11 +43,6 @@ export class AllCars implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadCars();
-    this.loadLocations();
-  }
-
-  loadCars() {
     this.carService.getCars().subscribe({
       next: (cars) => {
         this.cars = cars;
@@ -55,16 +50,17 @@ export class AllCars implements OnInit {
         this.extractBrands();
         this.applyFilters();
       },
-      error: (err) => console.error('Failed to load cars', err)
+      error: (err) => {
+        // Handle error silently or show user-friendly message
+      }
     });
-  }
-
-  loadLocations() {
     this.locationService.getLocations().subscribe({
       next: (locations) => {
         this.locations = locations;
       },
-      error: (err) => console.error('Failed to load locations', err)
+      error: (err) => {
+        // Handle error silently or show user-friendly message
+      }
     });
   }
 
@@ -194,9 +190,8 @@ export class AllCars implements OnInit {
   }
 
   bookCar(car: Car) {
-    // Navigate to booking page with car details
-    console.log('Booking car:', car);
-    // You can implement navigation to booking page here
+    // Handle booking logic without logging sensitive data
+    // Navigate to booking page or show booking modal
   }
 
   viewDetails(car: Car) {

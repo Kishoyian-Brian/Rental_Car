@@ -25,6 +25,7 @@
           {{ isLoading ? 'Signing in...' : 'Sign In' }}
         </button>
       </form>
+      <a *ngIf="isLoginMode" routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
 
       <form *ngIf="!isLoginMode" (ngSubmit)="onRegister()" #registerForm="ngForm">
         <input type="text" name="name" [(ngModel)]="registerData.name" placeholder="Full Name (optional)" class="form-input" />

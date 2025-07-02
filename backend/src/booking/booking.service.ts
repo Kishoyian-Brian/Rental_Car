@@ -5,6 +5,7 @@ import { MailerService } from '../shared/mailer/mailer.service';
 import { CreateBookingDto } from '../dto/create-booking.dto';
 import { UpdateBookingDto } from '../dto/update-booking.dto';
 import { BookingStatus } from '../interfaces/booking.interface';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class BookingService {
@@ -12,6 +13,7 @@ export class BookingService {
     private prisma: PrismaService,
     private apiResponse: ApiResponseService,
     private mailer: MailerService,
+    private notificationService: NotificationService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: string) {
@@ -412,7 +414,12 @@ export class BookingService {
       });
 
       await this.mailer.sendBookingCancellation(updatedBooking);
-
+      // Send in-app notification
+      await this.notificationService.createNotification(
+        updatedBooking.userId,
+        `Your booking for ${updatedBooking.car.make} ${updatedBooking.car.model} has been rejected/cancelled.`,
+        'BOOKING_REJECTED'
+      );
       return this.apiResponse.ok(updatedBooking, 'Booking cancelled successfully', '', updatedBooking);
     } catch (error) {
       return this.apiResponse.error(
@@ -471,7 +478,12 @@ export class BookingService {
       });
 
       await this.mailer.sendBookingConfirmation(updatedBooking);
-
+      // Send in-app notification
+      await this.notificationService.createNotification(
+        updatedBooking.userId,
+        `Your booking for ${updatedBooking.car.make} ${updatedBooking.car.model} has been accepted!`,
+        'BOOKING_ACCEPTED'
+      );
       return this.apiResponse.ok(updatedBooking, 'Booking confirmed successfully', '', updatedBooking);
     } catch (error) {
       return this.apiResponse.error(
